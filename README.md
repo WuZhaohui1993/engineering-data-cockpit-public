@@ -54,7 +54,7 @@ mvn -f ruoyi-backend/pom.xml -DskipTests package
 ./scripts/start-frontend.sh
 ```
 
-浏览器访问 <http://127.0.0.1:5173>，后端就绪检查为 `GET http://127.0.0.1:8080/captchaImage`。初始化脚本会写入系统和示例数据，只能用于专用本地库。
+浏览器访问 <http://127.0.0.1:5173>，后端就绪检查为 `GET http://127.0.0.1:8080/captchaImage`。初始化脚本会写入 RuoYi 基础表和虚构示例数据，只能用于专用本地库；其中包含仅供本地演示的 `admin/test` 初始账号数据，首次登录后必须立即修改或删除，严禁用于生产。
 
 ## 测试
 

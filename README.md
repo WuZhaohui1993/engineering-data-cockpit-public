@@ -72,9 +72,25 @@ git diff --check
 
 以下截图来自脱敏的本地演示数据，用于展示管理外壳、设计器和登录页布局。
 
-| 管理外壳与设计器 | 运行页面 | 登录页 |
-| --- | --- | --- |
-| ![设计器](docs/assets/designer-overview.png) | ![运行页面](docs/assets/dashboard-runtime.png) | ![登录页](docs/assets/login-page.png) |
+### 设计器
+
+![设计器](docs/assets/designer-overview.png)
+
+### 项目概况
+
+![项目概况](docs/assets/project-overview.png)
+
+### 进度管理
+
+![进度管理](docs/assets/project-progress.png)
+
+### 质量管理
+
+![质量管理](docs/assets/project-quality.png)
+
+### 登录页
+
+![登录页](docs/assets/login-page.png)
 
 ## 在线演示
 

@@ -1,0 +1,20 @@
+[
+  {
+    "name": "土建工程",
+    "plan": 80,
+    "actual": 75,
+    "status": "进行中"
+  },
+  {
+    "name": "设备安装",
+    "plan": 65,
+    "actual": 60,
+    "status": "进行中"
+  },
+  {
+    "name": "仪电工程",
+    "plan": 40,
+    "actual": 35,
+    "status": "进行中"
+  }
+]

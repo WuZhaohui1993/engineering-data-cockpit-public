@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="88" viewBox="0 0 760 88" fill="none">
+  <defs>
+    <linearGradient id="frameFill" x1="380" y1="0" x2="380" y2="88" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#163A5C" stop-opacity="0.88"/>
+      <stop offset="0.55" stop-color="#1E5D96" stop-opacity="0.58"/>
+      <stop offset="1" stop-color="#0C3762" stop-opacity="0.14"/>
+    </linearGradient>
+    <linearGradient id="frameStroke" x1="0" y1="44" x2="760" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#29C7FF" stop-opacity="0"/>
+      <stop offset="0.18" stop-color="#249CFF"/>
+      <stop offset="0.5" stop-color="#7DEFFF"/>
+      <stop offset="0.82" stop-color="#249CFF"/>
+      <stop offset="1" stop-color="#29C7FF" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="frameGlow" x="-10%" y="-60%" width="120%" height="220%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <path d="M80 6H680L650 55C641 70 625 80 607 80H153C135 80 119 70 110 55L80 6Z" fill="url(#frameFill)"/>
+  <path d="M0 16H102L123 54C130 66 143 74 157 74H603C617 74 630 66 637 54L658 16H760" stroke="url(#frameStroke)" stroke-width="2" filter="url(#frameGlow)"/>
+  <path d="M226 82H534" stroke="#48DBFF" stroke-opacity="0.65" stroke-width="2"/>
+  <circle cx="380" cy="82" r="3" fill="#A2FAFF" filter="url(#frameGlow)"/>
+</svg>

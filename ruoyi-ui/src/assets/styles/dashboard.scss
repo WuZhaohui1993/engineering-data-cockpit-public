@@ -1,0 +1,287 @@
+/*
+ * 大屏管理与管理外壳的共享视觉基线。
+ * 大屏画布内部仍由页面配置控制；这里只管理菜单内页面的外壳、面板和控件密度。
+ */
+:root {
+  --dashboard-page-padding: 28px 30px 40px;
+  --dashboard-page-gap: 14px;
+  --dashboard-hero-gap: 26px;
+  --dashboard-title-size: 27px;
+  --dashboard-panel-radius: 10px;
+  --dashboard-table-head-height: 48px;
+  --dashboard-table-row-height: 67px;
+  --dashboard-designer-header-height: 58px;
+  --dashboard-designer-toolbar-height: 44px;
+  --dashboard-inspector-control-height: var(--el-component-size, 32px);
+}
+
+html[data-ui-size='large'] {
+  --dashboard-page-padding: 32px 34px 44px;
+  --dashboard-page-gap: 16px;
+  --dashboard-hero-gap: 30px;
+  --dashboard-title-size: 29px;
+  --dashboard-panel-radius: 12px;
+  --dashboard-table-head-height: 52px;
+  --dashboard-table-row-height: 72px;
+  --dashboard-designer-header-height: 64px;
+  --dashboard-designer-toolbar-height: 48px;
+  --dashboard-inspector-control-height: var(--el-component-size-large, 40px);
+}
+
+html[data-ui-size='small'] {
+  --dashboard-page-padding: 20px 22px 30px;
+  --dashboard-page-gap: 12px;
+  --dashboard-hero-gap: 20px;
+  --dashboard-title-size: 24px;
+  --dashboard-panel-radius: 8px;
+  --dashboard-table-head-height: 42px;
+  --dashboard-table-row-height: 58px;
+  --dashboard-designer-header-height: 52px;
+  --dashboard-designer-toolbar-height: 38px;
+  --dashboard-inspector-control-height: var(--el-component-size-small, 24px);
+}
+
+html[data-ui-size] .dashboard-page,
+html[data-ui-size] .dataset-page,
+html[data-ui-size] .resource-page {
+  min-height: calc(100vh - 84px);
+  padding: var(--dashboard-page-padding);
+  background: var(--el-bg-color-page, #f4f7fb);
+  color: var(--el-text-color-primary, #1b2737);
+}
+
+html[data-ui-size] .dashboard-page .page-hero,
+html[data-ui-size] .dataset-page .dataset-hero {
+  margin-bottom: var(--dashboard-hero-gap);
+}
+
+html[data-ui-size] .dashboard-page .page-hero h1,
+html[data-ui-size] .dataset-page .dataset-hero h1,
+html[data-ui-size] .resource-page .resource-hero h1 {
+  color: var(--el-text-color-primary, #1b2737);
+  font-size: var(--dashboard-title-size);
+}
+
+html[data-ui-size] .dashboard-page .page-hero p,
+html[data-ui-size] .dataset-page .dataset-hero p,
+html[data-ui-size] .resource-page .resource-hero p,
+html[data-ui-size] .dashboard-page .eyebrow,
+html[data-ui-size] .dataset-page .eyebrow,
+html[data-ui-size] .dataset-page .section-eyebrow,
+html[data-ui-size] .resource-page .eyebrow {
+  color: var(--el-text-color-secondary, #8b97a6);
+}
+
+html[data-ui-size] .dashboard-page .page-toolbar,
+html[data-ui-size] .dashboard-page .page-table-wrap,
+html[data-ui-size] .dataset-page .dataset-toolbar,
+html[data-ui-size] .dataset-page .dataset-table-wrap,
+html[data-ui-size] .resource-page .resource-tabs {
+  border-color: var(--el-border-color-light, #e5ebf2);
+  border-radius: var(--dashboard-panel-radius);
+  background: var(--el-bg-color, #fff);
+}
+
+html[data-ui-size] .dashboard-page .page-toolbar,
+html[data-ui-size] .dataset-page .dataset-toolbar {
+  margin-bottom: var(--dashboard-page-gap);
+}
+
+html[data-ui-size] .dashboard-page .page-table-wrap th.el-table__cell,
+html[data-ui-size] .dataset-page .dataset-table th.el-table__cell,
+html[data-ui-size] .resource-page .resource-table-wrap th.el-table__cell {
+  height: var(--dashboard-table-head-height);
+  color: var(--el-text-color-secondary, #929dac);
+  background: var(--el-bg-color, #fff);
+}
+
+html[data-ui-size] .dashboard-page .page-table-wrap td.el-table__cell,
+html[data-ui-size] .dataset-page .dataset-table td.el-table__cell,
+html[data-ui-size] .resource-page .resource-table-wrap td.el-table__cell {
+  height: var(--dashboard-table-row-height);
+  border-bottom-color: var(--el-border-color-lighter, #eff2f5);
+}
+
+html[data-ui-size] .dashboard-page .page-name-cell strong,
+html[data-ui-size] .dashboard-page .folder-cell,
+html[data-ui-size] .dashboard-page .version-title,
+html[data-ui-size] .dashboard-page .share-list-title,
+html[data-ui-size] .dashboard-page .template-card strong,
+html[data-ui-size] .dataset-page .dataset-name-cell strong,
+html[data-ui-size] .dataset-page .form-section-head h3,
+html[data-ui-size] .resource-page .resource-table-wrap strong {
+  color: var(--el-text-color-primary, #2d3b4e);
+}
+
+html[data-ui-size] .dashboard-page .page-name-cell small,
+html[data-ui-size] .dashboard-page .version-row small,
+html[data-ui-size] .dashboard-page .version-row p,
+html[data-ui-size] .dashboard-page .muted,
+html[data-ui-size] .dashboard-page .page-count,
+html[data-ui-size] .dashboard-page .template-card p,
+html[data-ui-size] .dashboard-page .template-card small,
+html[data-ui-size] .dataset-page .dataset-name-cell small,
+html[data-ui-size] .dataset-page .dataset-count,
+html[data-ui-size] .dataset-page .test-state small,
+html[data-ui-size] .resource-page .resource-table-wrap small,
+html[data-ui-size] .resource-page .field-hint,
+html[data-ui-size] .resource-page .preview-note {
+  color: var(--el-text-color-secondary, #9099a6);
+}
+
+html[data-ui-size] .dashboard-page .page-mark,
+html[data-ui-size] .dashboard-page .version-pill,
+html[data-ui-size] .dataset-page .type-mark.icon-teal,
+html[data-ui-size] .dataset-page .type-mark.teal {
+  color: var(--el-color-primary);
+  border-color: var(--el-color-primary-light-7);
+  background: var(--el-color-primary-light-9);
+}
+
+html[data-ui-size] .dashboard-page .version-row.current,
+html[data-ui-size] .dataset-page .source-section,
+html[data-ui-size] .dataset-page .test-params,
+html[data-ui-size] .dataset-page .test-summary,
+html[data-ui-size] .resource-page .asset-preview {
+  border-color: var(--el-border-color-light, #e5ebf2);
+  background: var(--el-fill-color-light, #f7f9fc);
+}
+
+html[data-ui-size] .dashboard-page .template-card {
+  border-color: var(--el-border-color-light, #e5ebf2);
+  background: var(--el-bg-color, #fff);
+}
+
+html[data-ui-size] .dashboard-page .template-card:hover,
+html[data-ui-size] .resource-page .asset-preview:hover,
+html[data-ui-size] .resource-page .asset-preview:focus-visible {
+  border-color: var(--el-color-primary);
+  box-shadow: 0 0 0 2px var(--el-color-primary-light-8);
+}
+
+html[data-ui-size] .resource-page .preview-meta,
+html[data-ui-size] .resource-page .preview-meta b,
+html[data-ui-size] .dashboard-page .folder-dialog-toolbar,
+html[data-ui-size] .dashboard-page .recycle-toolbar,
+html[data-ui-size] .dataset-page .source-dialog-toolbar,
+html[data-ui-size] .dataset-page .group-dialog-toolbar {
+  color: var(--el-text-color-regular, #606266);
+}
+
+html[data-ui-size] .designer-shell {
+  --surface: var(--el-bg-color, #fff);
+  --surface-muted: var(--el-fill-color-light, #f7f9fc);
+  --border: var(--el-border-color-light, #e6ebf2);
+  --text: var(--el-text-color-primary, #18212f);
+  --muted: var(--el-text-color-secondary, #7e8a9d);
+  --accent: var(--el-color-primary);
+  background: var(--el-bg-color-page, #eef2f7);
+  color: var(--el-text-color-primary, #18212f);
+}
+
+html[data-ui-size] .designer-shell .designer-header {
+  height: var(--dashboard-designer-header-height);
+  flex-basis: var(--dashboard-designer-header-height);
+}
+
+html[data-ui-size] .designer-shell .workspace-toolbar {
+  min-height: var(--dashboard-designer-toolbar-height);
+}
+
+html[data-ui-size] .designer-shell .inspector-scroll .el-input__wrapper,
+html[data-ui-size] .designer-shell .inspector-scroll .el-select__wrapper,
+html[data-ui-size] .designer-shell .schema-row .el-input__wrapper,
+html[data-ui-size] .designer-shell .schema-row .el-select__wrapper {
+  min-height: var(--dashboard-inspector-control-height);
+}
+
+html[data-ui-size] .designer-shell .page-title,
+html[data-ui-size] .designer-shell .panel-tabs button.active,
+html[data-ui-size] .designer-shell .panel-heading,
+html[data-ui-size] .designer-shell .inspector-head h2,
+html[data-ui-size] .designer-shell .inspector-panel .section-label {
+  color: var(--el-text-color-primary, #253144);
+}
+
+html[data-ui-size] .designer-shell .component-item,
+html[data-ui-size] .designer-shell .palette-tip,
+html[data-ui-size] .designer-shell .data-quality-note,
+html[data-ui-size] .designer-shell .dataset-summary,
+html[data-ui-size] .designer-shell .filter-row,
+html[data-ui-size] .designer-shell .form-field-editor,
+html[data-ui-size] .designer-shell .page-filter-row,
+html[data-ui-size] .designer-shell .tab-editor-item,
+html[data-ui-size] .designer-shell .palette-option,
+html[data-ui-size] .designer-shell .static-data-editor .el-textarea__inner {
+  border-color: var(--el-border-color-light, #edf0f4);
+  background: var(--el-fill-color-light, #fbfcfe);
+  color: var(--el-text-color-regular, #606266);
+}
+
+html[data-ui-size] .designer-shell .component-item:hover,
+html[data-ui-size] .designer-shell .layer-row.active,
+html[data-ui-size] .designer-shell .tool-group .el-button:hover,
+html[data-ui-size] .designer-shell .zoom-tools .el-button:hover,
+html[data-ui-size] .designer-shell .tool-group .toggled,
+html[data-ui-size] .designer-shell .palette-option:hover,
+html[data-ui-size] .designer-shell .palette-option.active {
+  border-color: var(--el-color-primary-light-5);
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+}
+
+html[data-ui-size] .designer-shell .panel-tabs button.active::after,
+html[data-ui-size] .designer-shell .inspector-tabs .el-tabs__active-bar {
+  background: var(--el-color-primary);
+}
+
+html[data-ui-size] .designer-shell .workspace,
+html[data-ui-size] .designer-shell .canvas-viewport {
+  background-color: var(--el-bg-color-page, #e9eef4);
+}
+
+html[data-ui-size] .designer-shell .workspace-toolbar,
+html[data-ui-size] .designer-shell .workspace-footer {
+  background: color-mix(in srgb, var(--el-bg-color) 92%, transparent);
+  color: var(--el-text-color-secondary, #8c98a8);
+}
+
+html[data-ui-size] .designer-shell .designer-context-menu {
+  border-color: var(--el-border-color-light, #dce5ed);
+  background: var(--el-bg-color-overlay, #fff);
+}
+
+html[data-ui-size] .designer-shell .designer-context-menu button {
+  color: var(--el-text-color-regular, #566477);
+}
+
+html[data-ui-size] .runtime-page:not(.embed-mode):not(.share-mode) .runtime-toolbar,
+html[data-ui-size] .runtime-page:not(.embed-mode):not(.share-mode) .runtime-filterbar {
+  border-color: var(--el-border-color-light, #dfe6ee);
+  background: color-mix(in srgb, var(--el-bg-color) 95%, transparent);
+  color: var(--el-text-color-regular, #647286);
+}
+
+html[data-ui-size] .runtime-page:not(.embed-mode):not(.share-mode) .runtime-title .el-button,
+html[data-ui-size] .runtime-page:not(.embed-mode):not(.share-mode) .toolbar-right,
+html[data-ui-size] .runtime-page:not(.embed-mode):not(.share-mode) .toolbar-right .el-button {
+  color: var(--el-text-color-regular, #647286);
+}
+
+html[data-ui-size] .runtime-page:not(.embed-mode):not(.share-mode) .stage-viewport {
+  background: var(--el-bg-color-page, #eef2f6);
+}
+
+html[data-ui-size] .runtime-page:not(.embed-mode):not(.share-mode) .runtime-filterbar input {
+  border-color: var(--el-border-color, #dcdfe6);
+  background: var(--el-bg-color, #fff);
+  color: var(--el-text-color-primary, #303133);
+}
+
+@media (max-width: 900px) {
+  html[data-ui-size] .dashboard-page,
+  html[data-ui-size] .dataset-page,
+  html[data-ui-size] .resource-page {
+    padding: 18px 12px;
+  }
+}

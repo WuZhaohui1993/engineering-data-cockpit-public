@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.DashboardDataFolderMapper">
+    <sql id="folderSelect">
+        <choose>
+            <when test="scope == 'dataset'">
+                select group_id as folderId, group_code as folderCode, group_name as folderName,
+                       group_code as groupCode, group_id as groupId, group_name as groupName,
+                       parent_id as parentId, sort_order as sortOrder, create_by as createBy,
+                       create_time as createTime, update_by as updateBy, update_time as updateTime, remark
+                from dashboard_dataset_group
+            </when>
+            <when test="scope == 'page' or scope == 'resource'">
+                select folder_id as folderId, folder_code as folderCode, folder_name as folderName,
+                       status, parent_id as parentId, sort_order as sortOrder, create_by as createBy,
+                       create_time as createTime, update_by as updateBy, update_time as updateTime, remark
+                from <choose><when test="scope == 'page'">dashboard_page_folder</when><otherwise>dashboard_resource_folder</otherwise></choose>
+            </when>
+            <otherwise>
+                select folder_id as folderId, folder_code as folderCode, folder_name as folderName,
+                       scope, parent_id as parentId, sort_order as sortOrder, create_by as createBy,
+                       create_time as createTime, update_by as updateBy, update_time as updateTime, remark
+                from dashboard_data_folder where scope = #{scope}
+            </otherwise>
+        </choose>
+    </sql>
+
+    <select id="selectFolders" resultType="map">
+        <include refid="folderSelect"/>
+        order by <choose><when test="scope == 'dataset'">group_id</when><otherwise>folder_id</otherwise></choose> asc
+        <if test="lock">for update</if>
+    </select>
+
+    <select id="selectFolder" resultType="map">
+        <include refid="folderSelect"/>
+        <choose>
+            <when test="scope == 'dataset'">where group_id = #{folderId}</when>
+            <when test="scope == 'page' or scope == 'resource'">where folder_id = #{folderId}</when>
+            <otherwise>and folder_id = #{folderId}</otherwise>
+        </choose>
+        <if test="lock">for update</if>
+    </select>
+
+    <insert id="insertFolder" parameterType="map" useGeneratedKeys="true" keyProperty="folderId">
+        <choose>
+            <when test="scope == 'dataset'">
+                insert into dashboard_dataset_group
+                (group_code, group_name, parent_id, sort_order, create_by, create_time, remark)
+                values (#{folderCode}, #{folderName}, #{parentId}, #{sortOrder}, #{username}, now(), #{remark})
+            </when>
+            <when test="scope == 'page' or scope == 'resource'">
+                insert into <choose><when test="scope == 'page'">dashboard_page_folder</when><otherwise>dashboard_resource_folder</otherwise></choose>
+                (folder_code, folder_name, parent_id, sort_order, status, create_by, create_time, remark)
+                values (#{folderCode}, #{folderName}, #{parentId}, #{sortOrder}, '0', #{username}, now(), #{remark})
+            </when>
+            <otherwise>
+                insert into dashboard_data_folder
+                (scope, folder_code, folder_name, parent_id, sort_order, create_by, create_time, remark)
+                values (#{scope}, #{folderCode}, #{folderName}, #{parentId}, #{sortOrder}, #{username}, now(), #{remark})
+            </otherwise>
+        </choose>
+    </insert>
+
+    <update id="updateFolder" parameterType="map">
+        <choose>
+            <when test="scope == 'dataset'">
+                update dashboard_dataset_group
+                set group_name = #{folderName}, parent_id = #{parentId}, sort_order = #{sortOrder},
+                    remark = #{remark}, update_by = #{username}, update_time = now()
+                where group_id = #{folderId}
+            </when>
+            <when test="scope == 'page' or scope == 'resource'">
+                update <choose><when test="scope == 'page'">dashboard_page_folder</when><otherwise>dashboard_resource_folder</otherwise></choose>
+                set folder_name = #{folderName}, parent_id = #{parentId}, sort_order = #{sortOrder},
+                    status = #{status}, remark = #{remark}, update_by = #{username}, update_time = now()
+                where folder_id = #{folderId}
+            </when>
+            <otherwise>
+                update dashboard_data_folder
+                set folder_name = #{folderName}, parent_id = #{parentId}, sort_order = #{sortOrder},
+                    remark = #{remark}, update_by = #{username}, update_time = now()
+                where folder_id = #{folderId} and scope = #{scope}
+            </otherwise>
+        </choose>
+    </update>
+
+    <delete id="deleteFolder">
+        <choose>
+            <when test="scope == 'dataset'">delete from dashboard_dataset_group where group_id = #{folderId}</when>
+            <when test="scope == 'page'">delete from dashboard_page_folder where folder_id = #{folderId}</when>
+            <when test="scope == 'resource'">delete from dashboard_resource_folder where folder_id = #{folderId}</when>
+            <otherwise>delete from dashboard_data_folder where folder_id = #{folderId} and scope = #{scope}</otherwise>
+        </choose>
+    </delete>
+
+    <select id="countMembers" resultType="int">
+        <choose>
+            <when test="scope == 'dataset'">select count(*) from dashboard_dataset where group_code = #{groupCode}</when>
+            <when test="scope == 'source'">select count(*) from dashboard_data_source where folder_id = #{folderId}</when>
+            <!-- 保持旧页面目录规则：回收站页面不阻止删除目录。 -->
+            <when test="scope == 'page'">select count(*) from dashboard_page where folder_id = #{folderId} and is_deleted = '0'</when>
+            <when test="scope == 'resource'">
+                select (select count(*) from dashboard_asset where folder_id = #{folderId})
+                     + (select count(*) from dashboard_map_resource where folder_id = #{folderId})
+            </when>
+            <otherwise>select count(*) from dashboard_integration where folder_id = #{folderId}</otherwise>
+        </choose>
+    </select>
+
+    <select id="selectMemberIds" resultType="long">
+        <choose>
+            <when test="scope == 'dataset'">select dataset_id from dashboard_dataset where dataset_id</when>
+            <when test="scope == 'source'">select data_source_id from dashboard_data_source where data_source_id</when>
+            <when test="scope == 'page'">select page_id from dashboard_page where is_deleted = '0' and page_id</when>
+            <when test="scope == 'resource' and resourceType == 'asset'">select asset_id from dashboard_asset where asset_id</when>
+            <when test="scope == 'resource' and resourceType == 'map'">select map_id from dashboard_map_resource where map_code != 'demo-region' and map_id</when>
+            <otherwise>select integration_id from dashboard_integration where integration_id</otherwise>
+        </choose>
+        in <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+        order by 1 for update
+    </select>
+
+    <!-- 仅更新目录归属及审计元数据，禁止经过配置/状态更新流程。 -->
+    <update id="moveMembers">
+        <choose>
+            <when test="scope == 'dataset'">
+                update dashboard_dataset set group_code = #{groupCode}, update_by = #{username}, update_time = now()
+                where dataset_id
+            </when>
+            <when test="scope == 'source'">
+                update dashboard_data_source set folder_id = #{folderId}, update_by = #{username}, update_time = now()
+                where data_source_id
+            </when>
+            <when test="scope == 'page'">
+                update dashboard_page set folder_id = #{folderId}, update_by = #{username}, update_time = now()
+                where is_deleted = '0' and page_id
+            </when>
+            <when test="scope == 'resource' and resourceType == 'asset'">
+                update dashboard_asset set folder_id = #{folderId}, update_by = #{username}, update_time = now()
+                where asset_id
+            </when>
+            <when test="scope == 'resource' and resourceType == 'map'">
+                update dashboard_map_resource set folder_id = #{folderId}, update_by = #{username}, update_time = now()
+                where map_code != 'demo-region' and map_id
+            </when>
+            <otherwise>
+                update dashboard_integration set folder_id = #{folderId}, update_by = #{username}, update_time = now()
+                where integration_id
+            </otherwise>
+        </choose>
+        in <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </update>
+</mapper>

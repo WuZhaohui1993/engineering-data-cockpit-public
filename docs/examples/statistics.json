@@ -1,0 +1,10 @@
+[
+  {
+    "label": "累计完成产值",
+    "value": 12.8,
+    "suffix": "亿元",
+    "compareValue": "5.2%",
+    "compareLabel": "同比",
+    "compareState": "up"
+  }
+]

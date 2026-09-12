@@ -1,0 +1,668 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.DashboardIntegrationMapper">
+
+    <sql id="endpointListSql">
+        select e.endpoint_id as endpointId, e.data_source_id as dataSourceId,
+               s.source_code as sourceCode, s.source_name as sourceName,
+               e.endpoint_code as endpointCode, e.endpoint_name as endpointName,
+               e.path, e.method, e.request_content_type as requestContentType,
+               s.source_type as sourceType, s.status as sourceStatus,
+               s.config_json as sourceConfigJson, s.secret_ciphertext as sourceSecretCiphertext,
+               e.response_type as responseType, e.auth_provider as authProvider,
+               e.credential_ref as credentialRef, e.config_json as configJson,
+               e.credential_ciphertext as credentialCiphertext,
+               e.contract_version as contractVersion, e.status,
+               e.last_test_at as lastTestAt, e.last_test_status as lastTestStatus,
+               e.last_request_id as lastRequestId, e.last_success_at as lastSuccessAt,
+               e.consecutive_failures as consecutiveFailures, e.last_error_code as lastErrorCode,
+               e.create_by as createBy, e.create_time as createTime,
+               e.update_by as updateBy, e.update_time as updateTime, e.remark
+        from dashboard_data_source_endpoint e
+        join dashboard_data_source s on s.data_source_id = e.data_source_id
+        where s.source_code = #{sourceCode}
+        <if test="keyword != null and keyword != ''">
+            and (e.endpoint_code like concat('%', #{keyword}, '%') or e.endpoint_name like concat('%', #{keyword}, '%'))
+        </if>
+        <if test="status != null and status != ''">and e.status = #{status}</if>
+        order by e.endpoint_id desc
+    </sql>
+
+    <select id="selectEndpointList" resultType="map">
+        <bind name="keyword" value="null"/><bind name="status" value="null"/>
+        <include refid="endpointListSql"/>
+    </select>
+
+    <select id="selectEndpointPage" resultType="map">
+        <include refid="endpointListSql"/>
+    </select>
+
+    <select id="selectEndpointById" resultType="map">
+        select e.endpoint_id as endpointId, e.data_source_id as dataSourceId,
+               s.source_code as sourceCode, s.source_name as sourceName,
+               s.source_type as sourceType, s.config_json as sourceConfigJson,
+               s.secret_ciphertext as sourceSecretCiphertext, s.status as sourceStatus,
+               e.endpoint_code as endpointCode, e.endpoint_name as endpointName,
+               e.path, e.method, e.request_content_type as requestContentType,
+               e.response_type as responseType, e.auth_provider as authProvider,
+               e.credential_ref as credentialRef, e.config_json as configJson,
+               e.credential_ciphertext as credentialCiphertext,
+               e.contract_version as contractVersion, e.status,
+               e.last_test_at as lastTestAt, e.last_test_status as lastTestStatus,
+               e.last_request_id as lastRequestId, e.last_success_at as lastSuccessAt,
+               e.consecutive_failures as consecutiveFailures, e.last_error_code as lastErrorCode,
+               e.create_by as createBy, e.create_time as createTime,
+               e.update_by as updateBy, e.update_time as updateTime, e.remark
+        from dashboard_data_source_endpoint e
+        join dashboard_data_source s on s.data_source_id = e.data_source_id
+        where e.endpoint_id = #{endpointId}
+    </select>
+
+    <select id="selectEndpointByCode" resultType="map">
+        select e.endpoint_id as endpointId, e.data_source_id as dataSourceId,
+               s.source_code as sourceCode, s.source_name as sourceName,
+               s.source_type as sourceType, s.config_json as sourceConfigJson,
+               s.secret_ciphertext as sourceSecretCiphertext, s.status as sourceStatus,
+               e.endpoint_code as endpointCode, e.endpoint_name as endpointName,
+               e.path, e.method, e.request_content_type as requestContentType,
+               e.response_type as responseType, e.auth_provider as authProvider,
+               e.credential_ref as credentialRef, e.config_json as configJson,
+               e.credential_ciphertext as credentialCiphertext,
+               e.contract_version as contractVersion, e.status,
+               e.last_test_at as lastTestAt, e.last_test_status as lastTestStatus,
+               e.last_request_id as lastRequestId, e.last_success_at as lastSuccessAt,
+               e.consecutive_failures as consecutiveFailures, e.last_error_code as lastErrorCode,
+               e.create_by as createBy, e.create_time as createTime,
+               e.update_by as updateBy, e.update_time as updateTime, e.remark
+        from dashboard_data_source_endpoint e
+        join dashboard_data_source s on s.data_source_id = e.data_source_id
+        where s.source_code = #{sourceCode} and e.endpoint_code = #{endpointCode}
+        limit 1
+    </select>
+
+    <insert id="insertEndpoint" parameterType="map" useGeneratedKeys="true" keyProperty="endpointId">
+        insert into dashboard_data_source_endpoint
+        (data_source_id, endpoint_code, endpoint_name, path, method, request_content_type,
+         response_type, auth_provider, credential_ref, config_json, credential_ciphertext,
+         contract_version, status, create_by, create_time, remark)
+        values
+        (#{dataSourceId}, #{endpointCode}, #{endpointName}, #{path}, #{method}, #{requestContentType},
+         #{responseType}, #{authProvider}, #{credentialRef}, #{configJson}, #{credentialCiphertext},
+         #{contractVersion}, #{status}, #{createBy}, now(), #{remark})
+    </insert>
+
+    <update id="updateEndpoint" parameterType="map">
+        update dashboard_data_source_endpoint
+        <set>
+            <if test="endpointName != null">endpoint_name = #{endpointName},</if>
+            <if test="path != null">path = #{path},</if>
+            <if test="method != null">method = #{method},</if>
+            <if test="requestContentType != null">request_content_type = #{requestContentType},</if>
+            <if test="responseType != null">response_type = #{responseType},</if>
+            <if test="authProvider != null">auth_provider = #{authProvider},</if>
+            <if test="credentialRef != null">credential_ref = #{credentialRef},</if>
+            <if test="configJson != null">config_json = #{configJson},</if>
+            <if test="credentialCiphertext != null">credential_ciphertext = #{credentialCiphertext},</if>
+            <if test="contractVersion != null">contract_version = #{contractVersion},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="clearLastTest == true">last_test_at = null, last_test_status = null,</if>
+            update_by = #{updateBy}, update_time = now()
+        </set>
+        where endpoint_id = #{endpointId}
+    </update>
+
+    <delete id="deleteEndpoint">
+        delete from dashboard_data_source_endpoint where endpoint_id = #{endpointId}
+    </delete>
+
+    <select id="countEndpointReferences" resultType="int">
+        select count(*) from dashboard_dataset
+        where config_json like concat('%', #{sourceCode}, '%')
+          and config_json like concat('%', #{endpointCode}, '%')
+    </select>
+
+    <update id="updateEndpointTest">
+        update dashboard_data_source_endpoint
+        set last_test_status = #{status}, last_test_at = now()
+        where endpoint_id = #{endpointId}
+    </update>
+
+    <update id="updateEndpointHealth" parameterType="map">
+        update dashboard_data_source_endpoint
+        <set>
+            last_request_id = #{lastRequestId},
+            last_test_status = #{quality},
+            <if test="success == true">last_success_at = now(), consecutive_failures = 0,</if>
+            <if test="success != true">consecutive_failures = consecutive_failures + 1,</if>
+            last_error_code = #{errorCode}
+        </set>
+        where endpoint_id = #{endpointId}
+    </update>
+
+    <sql id="integrationListSelect">
+        select integration_id as integrationId, integration_code as integrationCode,
+               integration_name as integrationName, environment, profile,
+               folder_id as folderId,
+               (select f.folder_name from dashboard_data_folder f where f.folder_id = i.folder_id and f.scope = 'integration') as folderName,
+               schema_version as schemaVersion, endpoint_code as endpointCode,
+               project_scope_json as projectScopeJson, config_json as configJson,
+               network_profile as networkProfile, allowed_ip_json as allowedIpJson,
+               timezone, max_batch_items as maxBatchItems, max_body_bytes as maxBodyBytes,
+               rate_limit as rateLimit, concurrency_limit as concurrencyLimit,
+               raw_retention_days as rawRetentionDays, status,
+               create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark,
+               (select count(*) from dashboard_integration_key k where k.integration_id = i.integration_id) as keyCount,
+               (select count(*) from dashboard_integration_key k where k.integration_id = i.integration_id and k.status = 'ACTIVE') as activeKeyCount
+        from dashboard_integration i
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (integration_code like concat('%', #{keyword}, '%')
+                  or integration_name like concat('%', #{keyword}, '%'))
+            </if>
+            <if test="environment != null and environment != ''">and environment = #{environment}</if>
+            <if test="status != null and status != ''">and status = #{status}</if>
+            <if test="folderIds != null">
+                <choose>
+                    <when test="folderIds.size() > 0">
+                        and folder_id in <foreach collection="folderIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+                    </when>
+                    <otherwise>and 1 = 0</otherwise>
+                </choose>
+            </if>
+        </where>
+        order by integration_id desc
+    </sql>
+
+    <select id="selectIntegrationList" resultType="map">
+        <bind name="folderIds" value="null"/>
+        <include refid="integrationListSelect"/>
+    </select>
+
+    <select id="selectIntegrationListByFolders" resultType="map">
+        <include refid="integrationListSelect"/>
+    </select>
+
+    <select id="selectIntegrationById" resultType="map">
+        select integration_id as integrationId, integration_code as integrationCode,
+               integration_name as integrationName, environment, profile,
+               folder_id as folderId,
+               (select f.folder_name from dashboard_data_folder f where f.folder_id = i.folder_id and f.scope = 'integration') as folderName,
+               schema_version as schemaVersion, endpoint_code as endpointCode,
+               project_scope_json as projectScopeJson, config_json as configJson,
+               network_profile as networkProfile, allowed_ip_json as allowedIpJson,
+               timezone, max_batch_items as maxBatchItems, max_body_bytes as maxBodyBytes,
+               rate_limit as rateLimit, concurrency_limit as concurrencyLimit,
+               raw_retention_days as rawRetentionDays, status,
+               create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark,
+               (select count(*) from dashboard_integration_key k where k.integration_id = i.integration_id) as keyCount,
+               (select count(*) from dashboard_integration_key k where k.integration_id = i.integration_id and k.status = 'ACTIVE') as activeKeyCount
+        from dashboard_integration i where i.integration_id = #{integrationId}
+    </select>
+
+    <select id="selectIntegrationByCode" resultType="map">
+        select integration_id as integrationId, integration_code as integrationCode,
+               integration_name as integrationName, environment, profile,
+               folder_id as folderId,
+               (select f.folder_name from dashboard_data_folder f where f.folder_id = i.folder_id and f.scope = 'integration') as folderName,
+               schema_version as schemaVersion, endpoint_code as endpointCode,
+               project_scope_json as projectScopeJson, config_json as configJson,
+               network_profile as networkProfile, allowed_ip_json as allowedIpJson,
+               timezone, max_batch_items as maxBatchItems, max_body_bytes as maxBodyBytes,
+               rate_limit as rateLimit, concurrency_limit as concurrencyLimit,
+               raw_retention_days as rawRetentionDays, status,
+               create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark,
+               (select count(*) from dashboard_integration_key k where k.integration_id = i.integration_id) as keyCount,
+               (select count(*) from dashboard_integration_key k where k.integration_id = i.integration_id and k.status = 'ACTIVE') as activeKeyCount
+        from dashboard_integration i where i.integration_code = #{integrationCode}
+    </select>
+
+    <insert id="insertIntegration" parameterType="map" useGeneratedKeys="true" keyProperty="integrationId">
+        insert into dashboard_integration
+        (integration_code, integration_name, folder_id, environment, profile, schema_version, endpoint_code,
+         project_scope_json, config_json, network_profile, allowed_ip_json, timezone,
+         max_batch_items, max_body_bytes, rate_limit, concurrency_limit, raw_retention_days,
+         status, create_by, create_time, remark)
+        values
+        (#{integrationCode}, #{integrationName}, #{folderId}, #{environment}, #{profile}, #{schemaVersion}, #{endpointCode},
+         #{projectScopeJson}, #{configJson}, #{networkProfile}, #{allowedIpJson}, #{timezone},
+         #{maxBatchItems}, #{maxBodyBytes}, #{rateLimit}, #{concurrencyLimit}, #{rawRetentionDays},
+         #{status}, #{createBy}, now(), #{remark})
+    </insert>
+
+    <update id="updateIntegration" parameterType="map">
+        update dashboard_integration
+        <set>
+            <if test="integrationName != null">integration_name = #{integrationName},</if>
+            <if test="folderId != null">folder_id = #{folderId},</if>
+            <if test="environment != null">environment = #{environment},</if>
+            <if test="profile != null">profile = #{profile},</if>
+            <if test="schemaVersion != null">schema_version = #{schemaVersion},</if>
+            <if test="endpointCode != null">endpoint_code = #{endpointCode},</if>
+            <if test="projectScopeJson != null">project_scope_json = #{projectScopeJson},</if>
+            <if test="configJson != null">config_json = #{configJson},</if>
+            <if test="networkProfile != null">network_profile = #{networkProfile},</if>
+            <if test="allowedIpJson != null">allowed_ip_json = #{allowedIpJson},</if>
+            <if test="timezone != null">timezone = #{timezone},</if>
+            <if test="maxBatchItems != null">max_batch_items = #{maxBatchItems},</if>
+            <if test="maxBodyBytes != null">max_body_bytes = #{maxBodyBytes},</if>
+            <if test="rateLimit != null">rate_limit = #{rateLimit},</if>
+            <if test="concurrencyLimit != null">concurrency_limit = #{concurrencyLimit},</if>
+            <if test="rawRetentionDays != null">raw_retention_days = #{rawRetentionDays},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_by = #{updateBy}, update_time = now()
+        </set>
+        where integration_id = #{integrationId}
+    </update>
+
+    <delete id="deleteIntegration">
+        delete from dashboard_integration where integration_id = #{integrationId}
+    </delete>
+
+    <update id="updateIntegrationStatus">
+        update dashboard_integration set status = #{status}, update_by = #{updateBy}, update_time = now()
+        where integration_id = #{integrationId}
+    </update>
+
+    <select id="selectIntegrationKeys" resultType="map">
+        select integration_key_id as integrationKeyId, integration_id as integrationId,
+               key_id as keyId, provider, identity_value as identityValue,
+               credential_ref as credentialRef, valid_from as validFrom, valid_to as validTo,
+               status, last_used_at as lastUsedAt, create_by as createBy,
+               create_time as createTime, revoke_by as revokeBy, revoke_time as revokeTime,
+               remark
+        from dashboard_integration_key where integration_id = #{integrationId}
+        order by integration_key_id desc
+    </select>
+
+    <select id="selectIntegrationKeyById" resultType="map">
+        select integration_key_id as integrationKeyId, integration_id as integrationId,
+               key_id as keyId, provider, identity_value as identityValue,
+               credential_ref as credentialRef, secret_ciphertext as secretCiphertext,
+               valid_from as validFrom, valid_to as validTo, status,
+               last_used_at as lastUsedAt, create_by as createBy,
+               create_time as createTime, revoke_by as revokeBy, revoke_time as revokeTime,
+               remark
+        from dashboard_integration_key where integration_key_id = #{integrationKeyId}
+    </select>
+
+    <select id="selectActiveIntegrationKey" resultType="map">
+        select integration_key_id as integrationKeyId, integration_id as integrationId,
+               key_id as keyId, provider, identity_value as identityValue,
+               credential_ref as credentialRef, secret_ciphertext as secretCiphertext,
+               valid_from as validFrom, valid_to as validTo, status,
+               last_used_at as lastUsedAt, create_by as createBy,
+               create_time as createTime, remark
+        from dashboard_integration_key
+        where integration_id = #{integrationId} and key_id = #{keyId} and status = 'ACTIVE'
+        limit 1
+    </select>
+
+    <insert id="insertIntegrationKey" parameterType="map" useGeneratedKeys="true" keyProperty="integrationKeyId">
+        insert into dashboard_integration_key
+        (integration_id, key_id, provider, identity_value, credential_ref, secret_ciphertext,
+         valid_from, valid_to, status, create_by, create_time, remark)
+        values
+        (#{integrationId}, #{keyId}, #{provider}, #{identityValue}, #{credentialRef}, #{secretCiphertext},
+         #{validFrom}, #{validTo}, #{status}, #{createBy}, now(), #{remark})
+    </insert>
+
+    <update id="revokeIntegrationKey">
+        update dashboard_integration_key
+        set status = 'REVOKED', revoke_by = #{revokeBy}, revoke_time = now()
+        where integration_key_id = #{integrationKeyId} and status = 'ACTIVE'
+    </update>
+
+    <update id="touchIntegrationKey">
+        update dashboard_integration_key set last_used_at = now()
+        where integration_key_id = #{integrationKeyId} and status = 'ACTIVE'
+    </update>
+
+    <select id="selectBatchByIdempotency" resultType="map">
+        select batch_id as batchId, integration_id as integrationId, endpoint_code as endpointCode,
+               normalized_idempotency_key as normalizedIdempotencyKey, message_id as messageId,
+               external_request_id as externalRequestId, body_hash as bodyHash,
+               platform_request_id as platformRequestId, schema_version as schemaVersion,
+               status, accepted_count as acceptedCount, processing_count as processingCount,
+               duplicate_count as duplicateCount, rejected_count as rejectedCount,
+               retryable_count as retryableCount, response_json as responseJson,
+               raw_body_ciphertext as rawBodyCiphertext, error_code as errorCode,
+               error_message as errorMessage, received_at as receivedAt,
+               processed_at as processedAt, expires_at as expiresAt, details_expired_at as detailsExpiredAt
+        from dashboard_integration_batch
+        where integration_id = #{integrationId} and endpoint_code = #{endpointCode}
+          and normalized_idempotency_key = #{idempotencyKey}
+        limit 1
+    </select>
+
+    <select id="selectBatchByIdempotencyCurrent" resultType="map">
+        select batch_id as batchId, integration_id as integrationId, endpoint_code as endpointCode,
+               normalized_idempotency_key as normalizedIdempotencyKey, message_id as messageId,
+               external_request_id as externalRequestId, body_hash as bodyHash,
+               platform_request_id as platformRequestId, schema_version as schemaVersion,
+               status, accepted_count as acceptedCount, processing_count as processingCount,
+               duplicate_count as duplicateCount, rejected_count as rejectedCount,
+               retryable_count as retryableCount, response_json as responseJson,
+               raw_body_ciphertext as rawBodyCiphertext, error_code as errorCode,
+               error_message as errorMessage, received_at as receivedAt,
+               processed_at as processedAt, expires_at as expiresAt, details_expired_at as detailsExpiredAt
+        from dashboard_integration_batch
+        where integration_id = #{integrationId} and endpoint_code = #{endpointCode}
+          and normalized_idempotency_key = #{idempotencyKey}
+        limit 1 FOR UPDATE
+    </select>
+
+    <select id="selectBatchById" resultType="map">
+        select batch_id as batchId, integration_id as integrationId, endpoint_code as endpointCode,
+               normalized_idempotency_key as normalizedIdempotencyKey, message_id as messageId,
+               external_request_id as externalRequestId, body_hash as bodyHash,
+               platform_request_id as platformRequestId, schema_version as schemaVersion,
+               status, accepted_count as acceptedCount, processing_count as processingCount,
+               duplicate_count as duplicateCount, rejected_count as rejectedCount,
+               retryable_count as retryableCount, response_json as responseJson,
+               raw_body_ciphertext as rawBodyCiphertext, error_code as errorCode,
+               error_message as errorMessage, received_at as receivedAt,
+               processed_at as processedAt, expires_at as expiresAt, details_expired_at as detailsExpiredAt
+        from dashboard_integration_batch where batch_id = #{batchId}
+    </select>
+
+    <select id="selectBatchByMessageId" resultType="map">
+        select batch_id as batchId, integration_id as integrationId, endpoint_code as endpointCode,
+               normalized_idempotency_key as normalizedIdempotencyKey, message_id as messageId,
+               external_request_id as externalRequestId, body_hash as bodyHash,
+               platform_request_id as platformRequestId, schema_version as schemaVersion,
+               status, accepted_count as acceptedCount, processing_count as processingCount,
+               duplicate_count as duplicateCount, rejected_count as rejectedCount,
+               retryable_count as retryableCount, response_json as responseJson,
+               error_code as errorCode, error_message as errorMessage, received_at as receivedAt,
+               processed_at as processedAt, expires_at as expiresAt, details_expired_at as detailsExpiredAt
+        from dashboard_integration_batch
+        where integration_id = #{integrationId} and message_id = #{messageId}
+        order by batch_id desc limit 1
+    </select>
+
+    <select id="selectBatchByPlatformRequestId" resultType="map">
+        select batch_id as batchId, integration_id as integrationId, endpoint_code as endpointCode,
+               normalized_idempotency_key as normalizedIdempotencyKey, message_id as messageId,
+               external_request_id as externalRequestId, body_hash as bodyHash,
+               platform_request_id as platformRequestId, schema_version as schemaVersion, status,
+               accepted_count as acceptedCount, processing_count as processingCount,
+               duplicate_count as duplicateCount, rejected_count as rejectedCount,
+               retryable_count as retryableCount, response_json as responseJson,
+               error_code as errorCode, error_message as errorMessage,
+               received_at as receivedAt, processed_at as processedAt, expires_at as expiresAt, details_expired_at as detailsExpiredAt
+        from dashboard_integration_batch where platform_request_id = #{platformRequestId}
+        limit 1
+    </select>
+
+    <insert id="insertBatch" parameterType="map" useGeneratedKeys="true" keyProperty="batchId">
+        insert into dashboard_integration_batch
+        (integration_id, endpoint_code, normalized_idempotency_key, message_id, external_request_id,
+         body_hash, platform_request_id, schema_version, status, accepted_count, processing_count,
+         duplicate_count, rejected_count, retryable_count, response_json, raw_body_ciphertext,
+         error_code, error_message, received_at, expires_at)
+        values
+        (#{integrationId}, #{endpointCode}, #{normalizedIdempotencyKey}, #{messageId}, #{externalRequestId},
+         #{bodyHash}, #{platformRequestId}, #{schemaVersion}, #{status}, #{acceptedCount}, #{processingCount},
+         #{duplicateCount}, #{rejectedCount}, #{retryableCount}, #{responseJson}, #{rawBodyCiphertext},
+         #{errorCode}, #{errorMessage}, now(), #{expiresAt})
+    </insert>
+
+    <update id="updateBatch" parameterType="map">
+        update dashboard_integration_batch
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="acceptedCount != null">accepted_count = #{acceptedCount},</if>
+            <if test="processingCount != null">processing_count = #{processingCount},</if>
+            <if test="duplicateCount != null">duplicate_count = #{duplicateCount},</if>
+            <if test="rejectedCount != null">rejected_count = #{rejectedCount},</if>
+            <if test="retryableCount != null">retryable_count = #{retryableCount},</if>
+            <if test="responseJson != null">response_json = #{responseJson},</if>
+            <if test="errorCodePresent == true">error_code = #{errorCode},</if>
+            <if test="errorMessagePresent == true">error_message = #{errorMessage},</if>
+            <if test="processedAt != null">processed_at = #{processedAt},</if>
+            <if test="clearProcessedAt == true">processed_at = null,</if>
+            <if test="markProcessedAt == true">processed_at = now(),</if>
+        </set>
+        where batch_id = #{batchId}
+    </update>
+
+    <select id="selectRecoverableBatchIds" resultType="long">
+        select distinct b.batch_id
+        from dashboard_integration_batch b
+        join dashboard_integration_message m on m.batch_id = b.batch_id
+        where b.status in ('RECEIVED', 'VALIDATED', 'PROCESSING')
+          and m.status in ('RECEIVED', 'PROCESSING', 'FAILED', 'RETRYING')
+        order by b.batch_id asc
+        <if test="limit != null">limit #{limit}</if>
+    </select>
+
+    <select id="selectMessagesByBatch" resultType="map">
+        select integration_message_id as integrationMessageId, batch_id as batchId,
+               integration_id as integrationId, profile, business_key as businessKey,
+               item_index as itemIndex, project_code as projectCode,
+               business_time as businessTime, payload_ciphertext as payloadCiphertext,
+               payload_hash as payloadHash, normalized_json as normalizedJson,
+               status, retry_count as retryCount, error_code as errorCode,
+               error_message as errorMessage, received_at as receivedAt,
+               processed_at as processedAt
+        from dashboard_integration_message where batch_id = #{batchId}
+        order by item_index asc, integration_message_id asc
+    </select>
+
+    <select id="selectMessageById" resultType="map">
+        select integration_message_id as integrationMessageId, batch_id as batchId,
+               integration_id as integrationId, profile, business_key as businessKey,
+               item_index as itemIndex, project_code as projectCode,
+               business_time as businessTime, payload_ciphertext as payloadCiphertext,
+               payload_hash as payloadHash, normalized_json as normalizedJson,
+               status, retry_count as retryCount, error_code as errorCode,
+               error_message as errorMessage, received_at as receivedAt,
+               processed_at as processedAt
+        from dashboard_integration_message where integration_message_id = #{integrationMessageId}
+    </select>
+
+    <select id="selectMessageByBusinessKey" resultType="map">
+        select integration_message_id as integrationMessageId, batch_id as batchId,
+               integration_id as integrationId, profile, business_key as businessKey,
+               item_index as itemIndex, project_code as projectCode,
+               business_time as businessTime, payload_ciphertext as payloadCiphertext,
+               payload_hash as payloadHash, normalized_json as normalizedJson,
+               status, retry_count as retryCount, error_code as errorCode,
+               error_message as errorMessage, received_at as receivedAt,
+               processed_at as processedAt
+        from dashboard_integration_message
+        where integration_id = #{integrationId} and profile = #{profile}
+          and business_key = #{businessKey}
+        limit 1
+    </select>
+
+    <select id="selectMessageByBusinessKeyCurrent" resultType="map">
+        select integration_message_id as integrationMessageId, batch_id as batchId,
+               integration_id as integrationId, profile, business_key as businessKey,
+               item_index as itemIndex, project_code as projectCode,
+               business_time as businessTime, payload_ciphertext as payloadCiphertext,
+               payload_hash as payloadHash, normalized_json as normalizedJson,
+               status, retry_count as retryCount, error_code as errorCode,
+               error_message as errorMessage, received_at as receivedAt,
+               processed_at as processedAt
+        from dashboard_integration_message
+        where integration_id = #{integrationId} and profile = #{profile}
+          and business_key = #{businessKey}
+        limit 1 FOR UPDATE
+    </select>
+
+    <insert id="insertMessage" parameterType="map" useGeneratedKeys="true" keyProperty="integrationMessageId">
+        insert into dashboard_integration_message
+        (batch_id, integration_id, profile, business_key, item_index, project_code, business_time,
+         payload_ciphertext, payload_hash, normalized_json, status, retry_count, error_code,
+         error_message, received_at)
+        values
+        (#{batchId}, #{integrationId}, #{profile}, #{businessKey}, #{itemIndex}, #{projectCode}, #{businessTime},
+         #{payloadCiphertext}, #{payloadHash}, #{normalizedJson}, #{status}, #{retryCount}, #{errorCode},
+         #{errorMessage}, now())
+    </insert>
+
+    <update id="updateMessage" parameterType="map">
+        update dashboard_integration_message
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="retryCount != null">retry_count = #{retryCount},</if>
+            <if test="normalizedJson != null">normalized_json = #{normalizedJson},</if>
+            <if test="errorCodePresent == true">error_code = #{errorCode},</if>
+            <if test="errorMessagePresent == true">error_message = #{errorMessage},</if>
+            <if test="processedAt != null">processed_at = #{processedAt},</if>
+            <if test="clearProcessedAt == true">processed_at = null,</if>
+        </set>
+        where integration_message_id = #{integrationMessageId}
+    </update>
+
+    <select id="selectRecordByBusinessKey" resultType="map">
+        select record_id as recordId, integration_id as integrationId, environment, profile,
+               business_key as businessKey, project_code as projectCode, data_json as dataJson,
+               source_business_time as sourceBusinessTime, source_updated_at as sourceUpdatedAt,
+               received_at as receivedAt, updated_at as updatedAt, version_no as versionNo, status
+        from dashboard_integration_record
+        where integration_id = #{integrationId} and profile = #{profile}
+          and business_key = #{businessKey}
+        limit 1
+    </select>
+
+    <insert id="insertRecord" parameterType="map" useGeneratedKeys="true" keyProperty="recordId">
+        insert into dashboard_integration_record
+        (integration_id, environment, profile, business_key, project_code, data_json,
+         source_business_time, source_updated_at, received_at, updated_at, version_no, status)
+        values
+        (#{integrationId}, #{environment}, #{profile}, #{businessKey}, #{projectCode}, #{dataJson},
+         #{sourceBusinessTime}, #{sourceUpdatedAt}, now(), now(), #{versionNo}, #{status})
+    </insert>
+
+    <update id="updateRecord" parameterType="map">
+        update dashboard_integration_record
+        <set>
+            <if test="projectCode != null">project_code = #{projectCode},</if>
+            <if test="dataJson != null">data_json = #{dataJson},</if>
+            <if test="sourceBusinessTime != null">source_business_time = #{sourceBusinessTime},</if>
+            <if test="sourceUpdatedAt != null">source_updated_at = #{sourceUpdatedAt},</if>
+            <if test="versionNo != null">version_no = #{versionNo},</if>
+            <if test="status != null">status = #{status},</if>
+            updated_at = now()
+        </set>
+        where record_id = #{recordId}
+    </update>
+
+    <select id="selectBatchList" resultType="map">
+        select batch_id as batchId, integration_id as integrationId, endpoint_code as endpointCode,
+               normalized_idempotency_key as normalizedIdempotencyKey, message_id as messageId,
+               external_request_id as externalRequestId, body_hash as bodyHash,
+               platform_request_id as platformRequestId, schema_version as schemaVersion,
+               status, accepted_count as acceptedCount, processing_count as processingCount,
+               duplicate_count as duplicateCount, rejected_count as rejectedCount,
+               retryable_count as retryableCount, error_code as errorCode,
+               error_message as errorMessage, received_at as receivedAt, processed_at as processedAt, details_expired_at as detailsExpiredAt
+        from dashboard_integration_batch
+        <where>
+            <if test="integrationId != null">and integration_id = #{integrationId}</if>
+            <if test="status != null and status != ''">and status = #{status}</if>
+        </where>
+        order by batch_id desc
+        <if test="limit != null">limit #{limit}</if>
+    </select>
+
+    <select id="selectDeadLetterList" resultType="map">
+        select m.integration_message_id as integrationMessageId, m.batch_id as batchId,
+               m.integration_id as integrationId, i.integration_code as integrationCode,
+               m.profile, m.business_key as businessKey, m.item_index as itemIndex,
+               m.project_code as projectCode, m.status, m.retry_count as retryCount,
+               m.error_code as errorCode, m.error_message as errorMessage,
+               m.received_at as receivedAt, m.processed_at as processedAt
+        from dashboard_integration_message m
+        join dashboard_integration i on i.integration_id = m.integration_id
+        where m.status = 'DEAD_LETTER'
+        <if test="integrationId != null">and m.integration_id = #{integrationId}</if>
+        <if test="keyword != null and keyword != ''">
+            and (m.business_key like concat('%', #{keyword}, '%')
+              or m.error_code like concat('%', #{keyword}, '%'))
+        </if>
+        order by m.integration_message_id desc
+        <if test="limit != null">limit #{limit}</if>
+    </select>
+
+    <insert id="insertNonce" parameterType="map">
+        insert into dashboard_integration_nonce
+        (integration_id, key_id, nonce, expires_at, created_at)
+        values (#{integrationId}, #{keyId}, #{nonce}, #{expiresAt}, now())
+    </insert>
+
+    <delete id="deleteExpiredNonces">
+        delete from dashboard_integration_nonce where expires_at &lt; now()
+    </delete>
+
+    <update id="clearExpiredRawBodies">
+        update dashboard_integration_batch
+        set raw_body_ciphertext = null
+        where expires_at is not null and expires_at &lt; now() and raw_body_ciphertext is not null
+    </update>
+
+    <update id="revokeExpiredMediaRefs">
+        update dashboard_integration_media_ref set status = 'REVOKED'
+        where expires_at &lt; now() and status = 'ACTIVE'
+    </update>
+
+    <delete id="deleteExpiredMediaCandidates">
+        delete from dashboard_integration_media_ref
+        where expires_at &lt; now() and status in ('CANDIDATE', 'CONSUMED')
+    </delete>
+
+    <select id="selectMediaRef" resultType="map">
+        select media_ref as mediaRef, source_code as sourceCode, endpoint_code as endpointCode,
+               dataset_code as datasetCode,
+               media_profile as mediaProfile, business_key as businessKey,
+               form_params_ciphertext as formParamsCiphertext, page_id as pageId,
+               revision_id as revisionId, share_id as shareId, created_at as createdAt,
+               expires_at as expiresAt, status
+        from dashboard_integration_media_ref where media_ref = #{mediaRef}
+    </select>
+
+    <insert id="insertMediaRef" parameterType="map">
+        insert into dashboard_integration_media_ref
+        (media_ref, source_code, endpoint_code, dataset_code, media_profile, business_key,
+         form_params_ciphertext, page_id, revision_id, share_id, created_at, expires_at, status)
+        values
+        (#{mediaRef}, #{sourceCode}, #{endpointCode}, #{datasetCode}, #{mediaProfile}, #{businessKey},
+         #{formParamsCiphertext}, #{pageId}, #{revisionId}, #{shareId}, now(), #{expiresAt}, #{status})
+    </insert>
+
+    <update id="consumeMediaCandidate">
+        update dashboard_integration_media_ref
+        set status = 'CONSUMED'
+        where media_ref = #{mediaRef} and status = 'CANDIDATE' and expires_at &gt; now()
+    </update>
+
+    <update id="revokeMediaRefsByPage">
+        update dashboard_integration_media_ref set status = 'REVOKED'
+        where page_id = #{pageId}
+        <if test="revisionId != null">and revision_id = #{revisionId}</if>
+        <if test="revisionId != null">and share_id is null</if>
+        and status = 'ACTIVE'
+    </update>
+
+    <update id="revokeMediaRefsByShare">
+        update dashboard_integration_media_ref set status = 'REVOKED'
+        where share_id = #{shareId} and status = 'ACTIVE'
+    </update>
+
+    <update id="revokeMediaRefsForDeletedPages">
+        update dashboard_integration_media_ref r
+        join dashboard_page p on p.page_id = r.page_id
+        set r.status = 'REVOKED'
+        where p.is_deleted = '1' and r.status = 'ACTIVE'
+    </update>
+
+</mapper>

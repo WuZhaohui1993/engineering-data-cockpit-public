@@ -1,0 +1,20 @@
+[
+  {
+    "id": "T1",
+    "name": "基础施工",
+    "plannedStart": "2026-09-01",
+    "plannedEnd": "2026-09-15",
+    "actualStart": "2026-09-02",
+    "actualEnd": "2026-09-16",
+    "dependencies": ""
+  },
+  {
+    "id": "T2",
+    "name": "主体施工",
+    "plannedStart": "2026-09-16",
+    "plannedEnd": "2026-09-30",
+    "actualStart": "2026-09-17",
+    "actualEnd": "2026-09-29",
+    "dependencies": "T1"
+  }
+]

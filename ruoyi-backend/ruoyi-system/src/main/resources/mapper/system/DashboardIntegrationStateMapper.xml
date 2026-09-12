@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.DashboardIntegrationStateMapper">
+  <insert id="claimLease">
+    INSERT INTO dashboard_integration_lease(lease_key,owner,expires_at)
+    VALUES(#{key},#{owner},TIMESTAMPADD(SECOND,#{seconds},NOW(3)))
+    ON DUPLICATE KEY UPDATE owner=IF(expires_at &lt;= NOW(3),VALUES(owner),owner),
+      expires_at=IF(owner=VALUES(owner),VALUES(expires_at),expires_at)
+  </insert>
+  <select id="lockLease" resultType="String">
+    SELECT owner FROM dashboard_integration_lease WHERE lease_key=#{key} FOR UPDATE
+  </select>
+  <delete id="releaseLease">DELETE FROM dashboard_integration_lease WHERE lease_key=#{key} AND owner=#{owner}</delete>
+  <select id="snapshot" resultType="map">
+    SELECT payload_ciphertext AS payloadCiphertext,captured_at AS capturedAt,
+      fresh_until AS freshUntil,expires_at AS expiresAt
+    FROM dashboard_integration_snapshot WHERE snapshot_key=#{key} AND expires_at &gt; NOW(3)
+  </select>
+  <insert id="saveSnapshot">
+    INSERT INTO dashboard_integration_snapshot(snapshot_key,source_code,endpoint_code,payload_ciphertext,captured_at,fresh_until,expires_at)
+    VALUES(#{key},#{source},#{endpoint},#{ciphertext},NOW(3),TIMESTAMPADD(SECOND,#{freshSeconds},NOW(3)),TIMESTAMPADD(SECOND,#{retentionSeconds},NOW(3)))
+    ON DUPLICATE KEY UPDATE payload_ciphertext=VALUES(payload_ciphertext),captured_at=VALUES(captured_at),
+      fresh_until=VALUES(fresh_until),expires_at=VALUES(expires_at)
+  </insert>
+  <insert id="audit">
+    INSERT INTO dashboard_integration_audit(category,resource_code,request_id,outcome,actor,byte_count,duration_ms,created_at)
+    VALUES(#{category},#{resource},#{requestId},#{outcome},#{actor},#{bytes},#{durationMs},NOW(3))
+  </insert>
+  <insert id="alert">
+    INSERT INTO dashboard_integration_alert(alert_key,resource_code,error_code,first_at,last_at)
+    VALUES(#{key},#{resource},#{code},NOW(3),NOW(3))
+    ON DUPLICATE KEY UPDATE occurrences=occurrences+1,status='OPEN',last_at=NOW(3),acknowledged_by=''
+  </insert>
+  <insert id="categorizedAlert">
+    INSERT INTO dashboard_integration_alert(alert_key,category,resource_code,error_code,first_at,last_at)
+    VALUES(#{key},#{category},#{resource},#{code},NOW(3),NOW(3))
+    ON DUPLICATE KEY UPDATE occurrences=occurrences+1,status='OPEN',last_at=NOW(3),acknowledged_by=''
+  </insert>
+  <update id="acknowledge">UPDATE dashboard_integration_alert SET status='ACKNOWLEDGED',acknowledged_by=#{actor} WHERE alert_id=#{id}</update>
+  <select id="audits" resultType="map">
+    SELECT audit_id AS auditId,category,resource_code AS resourceCode,request_id AS requestId,outcome,actor,
+      byte_count AS byteCount,duration_ms AS durationMs,created_at AS createdAt FROM dashboard_integration_audit
+    <where><if test="category != null and category != ''">category=#{category}</if></where>
+    ORDER BY audit_id DESC
+  </select>
+  <select id="alerts" resultType="map">
+    SELECT alert_id AS alertId,category,resource_code AS resourceCode,error_code AS errorCode,occurrences,status,
+      first_at AS firstAt,last_at AS lastAt,acknowledged_by AS acknowledgedBy FROM dashboard_integration_alert ORDER BY last_at DESC
+  </select>
+  <!-- 来源编码为字面值。兼容历史 HTTP 告警的 source:endpoint 和请求审计的 source/endpoint，
+       不使用 LIKE，避免编码中的下划线或百分号扩大匹配范围。 -->
+  <sql id="scopeConditions">
+    <if test="category != null and category != ''">
+      <choose>
+        <when test="category == 'INBOUND'">AND category IN ('INBOUND','INBOUND_RETENTION')</when>
+        <otherwise>AND category=#{category}</otherwise>
+      </choose>
+    </if>
+    <if test="resourceCode != null and resourceCode != ''">
+      AND (resource_code=#{resourceCode}
+        OR LEFT(resource_code,CHAR_LENGTH(#{resourceCode})+1)=CONCAT(#{resourceCode},'/')
+        OR LEFT(resource_code,CHAR_LENGTH(#{resourceCode})+1)=CONCAT(#{resourceCode},':'))
+    </if>
+  </sql>
+  <select id="auditsByScope" resultType="map">
+    SELECT audit_id AS auditId,category,resource_code AS resourceCode,request_id AS requestId,outcome,actor,
+      byte_count AS byteCount,duration_ms AS durationMs,created_at AS createdAt
+    FROM dashboard_integration_audit WHERE 1=1 <include refid="scopeConditions"/>
+    ORDER BY audit_id DESC
+  </select>
+  <select id="alertsByScope" resultType="map">
+    SELECT alert_id AS alertId,category,resource_code AS resourceCode,error_code AS errorCode,occurrences,status,
+      first_at AS firstAt,last_at AS lastAt,acknowledged_by AS acknowledgedBy
+    FROM dashboard_integration_alert WHERE 1=1 <include refid="scopeConditions"/>
+    ORDER BY last_at DESC,alert_id DESC
+  </select>
+  <sql id="inboundScopeConditions">
+    <if test="resourceCode != null and resourceCode != ''">AND i.integration_code=#{resourceCode}</if>
+  </sql>
+  <select id="metricsByScope" resultType="map">
+    SELECT
+    <choose>
+      <when test="category == null or category == '' or category == 'INBOUND'">
+        (SELECT COUNT(*) FROM dashboard_integration_message m JOIN dashboard_integration i ON i.integration_id=m.integration_id
+          WHERE m.status IN ('RECEIVED','PROCESSING','FAILED','RETRYING') <include refid="inboundScopeConditions"/>) AS pending,
+        (SELECT COUNT(*) FROM dashboard_integration_message m JOIN dashboard_integration i ON i.integration_id=m.integration_id
+          WHERE m.status='DEAD_LETTER' <include refid="inboundScopeConditions"/>) AS deadLetters,
+        (SELECT COUNT(*) FROM dashboard_integration_record r JOIN dashboard_integration i ON i.integration_id=r.integration_id
+          WHERE r.status='ACTIVE' <include refid="inboundScopeConditions"/>) AS records,
+      </when>
+      <otherwise>0 AS pending,0 AS deadLetters,0 AS records,</otherwise>
+    </choose>
+      (SELECT COUNT(*) FROM dashboard_integration_alert WHERE status='OPEN' <include refid="scopeConditions"/>) AS openAlerts,
+      (SELECT COUNT(*) FROM dashboard_integration_audit WHERE category IN ('OUTBOUND','INBOUND','MEDIA')
+        AND created_at &gt; TIMESTAMPADD(HOUR,-24,NOW()) <include refid="scopeConditions"/>) AS requests24h,
+      (SELECT COUNT(*) FROM dashboard_integration_audit WHERE category IN ('OUTBOUND','INBOUND','MEDIA')
+        AND outcome NOT IN ('SUCCESS','NO_DATA','ACCEPTED')
+        AND created_at &gt; TIMESTAMPADD(HOUR,-24,NOW()) <include refid="scopeConditions"/>) AS failures24h,
+      (SELECT COUNT(*) FROM dashboard_integration_audit WHERE category='INBOUND_RETENTION'
+        AND created_at &gt; TIMESTAMPADD(HOUR,-24,NOW()) <include refid="scopeConditions"/>) AS retentionRuns24h,
+      (SELECT COUNT(*) FROM dashboard_integration_audit WHERE category='WEBSOCKET'
+        AND created_at &gt; TIMESTAMPADD(HOUR,-24,NOW()) <include refid="scopeConditions"/>) AS websocketEvents24h
+  </select>
+  <select id="resources" resultType="map">
+    SELECT 'OUTBOUND' AS category,source_code AS resourceCode,source_name AS resourceName,source_type AS sourceType
+      FROM dashboard_data_source WHERE source_type='HTTP'
+    UNION ALL
+    SELECT 'WEBSOCKET',source_code,source_name,source_type FROM dashboard_data_source WHERE source_type='WEBSOCKET'
+    UNION ALL
+    SELECT 'MEDIA',s.source_code,s.source_name,s.source_type FROM dashboard_data_source s
+      WHERE s.source_type='HTTP' AND EXISTS (SELECT 1 FROM dashboard_data_source_endpoint e
+        WHERE e.data_source_id=s.data_source_id AND e.response_type='BINARY_MEDIA')
+    UNION ALL
+    SELECT 'INBOUND',integration_code,integration_name,'INBOUND' FROM dashboard_integration
+    UNION ALL
+    SELECT 'INBOUND_RETENTION',integration_code,integration_name,'INBOUND' FROM dashboard_integration
+    ORDER BY category,resourceName,resourceCode
+  </select>
+  <select id="mediaResource" resultType="String">
+    SELECT CONCAT(source_code,'/',endpoint_code) FROM dashboard_integration_media_ref
+    WHERE SHA2(media_ref,256)=#{hash} LIMIT 1
+  </select>
+  <select id="mediaResourceByReference" resultType="String">
+    SELECT CONCAT(source_code,'/',endpoint_code) FROM dashboard_integration_media_ref WHERE media_ref=#{mediaRef}
+  </select>
+  <select id="metrics" resultType="map">
+    SELECT (SELECT COUNT(*) FROM dashboard_integration_message WHERE status IN ('RECEIVED','PROCESSING','FAILED','RETRYING')) AS pending,
+      (SELECT COUNT(*) FROM dashboard_integration_message WHERE status='DEAD_LETTER') AS deadLetters,
+      (SELECT COUNT(*) FROM dashboard_integration_record WHERE status='ACTIVE') AS records,
+      (SELECT COUNT(*) FROM dashboard_integration_alert WHERE status='OPEN') AS openAlerts,
+      (SELECT COUNT(*) FROM dashboard_integration_audit WHERE created_at &gt; TIMESTAMPADD(HOUR,-24,NOW())) AS requests24h,
+      (SELECT COUNT(*) FROM dashboard_integration_audit WHERE outcome NOT IN ('SUCCESS','NO_DATA','ACCEPTED') AND created_at &gt; TIMESTAMPADD(HOUR,-24,NOW())) AS failures24h
+  </select>
+  <insert id="signal">
+    INSERT INTO dashboard_integration_signal(integration_id,version,updated_at) VALUES(#{id},1,NOW(3))
+    ON DUPLICATE KEY UPDATE version=version+1,updated_at=NOW(3)
+  </insert>
+  <select id="version" resultType="Long">SELECT version FROM dashboard_integration_signal WHERE integration_id=#{id}</select>
+  <delete id="cleanupSnapshots">DELETE FROM dashboard_integration_snapshot WHERE expires_at &lt; NOW(3) LIMIT 1000</delete>
+  <delete id="cleanupAudits">DELETE FROM dashboard_integration_audit WHERE created_at &lt; TIMESTAMPADD(DAY,-#{days},NOW()) LIMIT 1000</delete>
+  <delete id="cleanupLeases">DELETE FROM dashboard_integration_lease WHERE expires_at &lt; TIMESTAMPADD(HOUR,-1,NOW()) LIMIT 1000</delete>
+</mapper>

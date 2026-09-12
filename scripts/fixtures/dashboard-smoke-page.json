@@ -1,0 +1,111 @@
+{
+  "schemaVersion": "1.0",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "widgets": [
+    {
+      "id": "labor-hik-total-card",
+      "type": "table",
+      "name": "冒烟夹具",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "w": 360,
+        "h": 300
+      },
+      "binding": {
+        "sourceType": "DATASET",
+        "datasetCode": "labor-hik-total",
+        "fieldMap": {}
+      },
+      "style": {
+        "title": ""
+      }
+    },
+    {
+      "id": "labor-hik-api-card",
+      "type": "table",
+      "name": "冒烟夹具",
+      "layout": {
+        "x": 400,
+        "y": 0,
+        "w": 360,
+        "h": 300
+      },
+      "binding": {
+        "sourceType": "DATASET",
+        "datasetCode": "labor-hik-events-api",
+        "fieldMap": {}
+      },
+      "style": {
+        "title": ""
+      }
+    },
+    {
+      "id": "design-json-chart",
+      "type": "table",
+      "name": "冒烟夹具",
+      "layout": {
+        "x": 800,
+        "y": 0,
+        "w": 360,
+        "h": 300
+      },
+      "binding": {
+        "sourceType": "DATASET",
+        "datasetCode": "design-json-demo",
+        "fieldMap": {}
+      },
+      "style": {
+        "title": ""
+      }
+    },
+    {
+      "id": "labor-hik-live-list",
+      "type": "table",
+      "name": "冒烟夹具",
+      "layout": {
+        "x": 1200,
+        "y": 0,
+        "w": 360,
+        "h": 300
+      },
+      "binding": {
+        "sourceType": "DATASET",
+        "datasetCode": "labor-hik-live",
+        "fieldMap": {}
+      },
+      "style": {
+        "title": ""
+      }
+    },
+    {
+      "id": "baseline-0",
+      "type": "text",
+      "layout": {
+        "x": 0,
+        "y": 400,
+        "w": 200,
+        "h": 100
+      },
+      "style": {
+        "text": "测试"
+      }
+    },
+    {
+      "id": "baseline-1",
+      "type": "text",
+      "layout": {
+        "x": 240,
+        "y": 400,
+        "w": 200,
+        "h": 100
+      },
+      "style": {
+        "text": "测试"
+      }
+    }
+  ]
+}

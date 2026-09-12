@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.DashboardIntegrationRetentionMapper">
+    <sql id="successfulBatch">
+        b.status = 'ACCEPTED' AND b.processing_count = 0 AND b.rejected_count = 0 AND b.retryable_count = 0
+        AND NOT EXISTS (SELECT 1 FROM dashboard_integration_message protected_message
+            WHERE protected_message.batch_id = b.batch_id AND protected_message.status != 'ACCEPTED')
+    </sql>
+    <select id="selectPolicies" resultType="map">
+        SELECT integration_id AS integrationId, integration_code AS integrationCode, config_json AS configJson
+        FROM dashboard_integration WHERE integration_id &gt; #{afterId}
+        ORDER BY integration_id LIMIT #{limit}
+    </select>
+    <select id="selectExpiredRawBatchIds" resultType="long">
+        SELECT b.batch_id FROM dashboard_integration_batch b
+        WHERE b.integration_id = #{integrationId} AND <include refid="successfulBatch"/>
+          AND b.expires_at &lt;= #{now} AND b.raw_body_ciphertext IS NOT NULL
+        ORDER BY b.expires_at, b.batch_id LIMIT #{limit} FOR UPDATE
+    </select>
+    <select id="selectExpiredRawMessageIds" resultType="long">
+        SELECT m.integration_message_id FROM dashboard_integration_message m
+        JOIN dashboard_integration_batch b ON b.batch_id = m.batch_id
+        WHERE m.integration_id = #{integrationId} AND b.integration_id = #{integrationId}
+          AND m.status = 'ACCEPTED' AND <include refid="successfulBatch"/>
+          AND b.expires_at &lt;= #{now} AND m.payload_ciphertext IS NOT NULL
+        ORDER BY m.integration_message_id LIMIT #{limit} FOR UPDATE
+    </select>
+    <select id="selectExpiredSuccessMessageIds" resultType="long">
+        SELECT m.integration_message_id FROM dashboard_integration_message m
+        JOIN dashboard_integration_batch b ON b.batch_id = m.batch_id
+        WHERE m.integration_id = #{integrationId} AND b.integration_id = #{integrationId}
+          AND m.status = 'ACCEPTED' AND <include refid="successfulBatch"/>
+          AND b.processed_at &lt; #{cutoff} AND m.normalized_json IS NOT NULL
+        ORDER BY m.integration_message_id LIMIT #{limit} FOR UPDATE
+    </select>
+    <select id="selectExpiredSuccessBatches" resultType="map">
+        SELECT b.batch_id AS batchId, b.platform_request_id AS platformRequestId,
+               b.message_id AS messageId, b.accepted_count AS acceptedCount,
+               b.processing_count AS processingCount, b.duplicate_count AS duplicateCount,
+               b.rejected_count AS rejectedCount, b.retryable_count AS retryableCount
+        FROM dashboard_integration_batch b
+        WHERE b.integration_id = #{integrationId} AND <include refid="successfulBatch"/>
+          AND b.processed_at &lt; #{cutoff}
+          AND (b.details_expired_at IS NULL OR (b.raw_body_ciphertext IS NULL
+            AND NOT EXISTS (SELECT 1 FROM dashboard_integration_message m WHERE m.batch_id = b.batch_id)))
+        ORDER BY b.processed_at, b.batch_id LIMIT #{limit} FOR UPDATE
+    </select>
+    <select id="selectExpiredRecordIds" resultType="long">
+        SELECT r.record_id FROM dashboard_integration_record r
+        JOIN dashboard_integration_message m ON m.integration_id = r.integration_id
+            AND m.profile = r.profile AND m.business_key = r.business_key
+        JOIN dashboard_integration_batch b ON b.batch_id = m.batch_id
+        WHERE r.integration_id = #{integrationId} AND r.updated_at &lt; #{cutoff}
+          AND r.status IN ('ACTIVE','DELETED') AND m.status = 'ACCEPTED' AND m.payload_hash IS NOT NULL
+          AND b.integration_id = #{integrationId} AND <include refid="successfulBatch"/>
+        ORDER BY r.updated_at, r.record_id LIMIT #{limit} FOR UPDATE
+    </select>
+    <update id="clearRawBatches">
+        UPDATE dashboard_integration_batch SET raw_body_ciphertext = NULL
+        WHERE integration_id = #{integrationId} AND status = 'ACCEPTED' AND batch_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </update>
+    <update id="clearRawMessages">
+        UPDATE dashboard_integration_message SET payload_ciphertext = NULL
+        WHERE integration_id = #{integrationId} AND status = 'ACCEPTED' AND integration_message_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </update>
+    <update id="clearSuccessMessages">
+        UPDATE dashboard_integration_message SET normalized_json = NULL
+        WHERE integration_id = #{integrationId} AND status = 'ACCEPTED' AND integration_message_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </update>
+    <delete id="deleteEmptySuccessBatch">
+        DELETE FROM dashboard_integration_batch
+        WHERE integration_id = #{integrationId} AND batch_id = #{batchId} AND status = 'ACCEPTED'
+          AND NOT EXISTS (SELECT 1 FROM dashboard_integration_message m WHERE m.batch_id = #{batchId})
+          AND raw_body_ciphertext IS NULL
+    </delete>
+    <update id="compactSuccessBatch">
+        UPDATE dashboard_integration_batch SET response_json = #{receipt}, details_expired_at = #{now}
+        WHERE integration_id = #{integrationId} AND batch_id = #{batchId} AND status = 'ACCEPTED'
+          AND details_expired_at IS NULL
+    </update>
+    <delete id="deleteExpiredRecords">
+        DELETE FROM dashboard_integration_record WHERE integration_id = #{integrationId} AND record_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </delete>
+</mapper>

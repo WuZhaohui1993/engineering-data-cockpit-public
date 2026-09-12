@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="382" height="234" viewBox="0 0 382 234" fill="none">
+  <defs><radialGradient id="p"><stop stop-color="#28CFFF" stop-opacity=".28"/><stop offset="1" stop-color="#0B4E84" stop-opacity="0"/></radialGradient><filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  <g id="base"><ellipse cx="38" cy="52" rx="35" ry="14" fill="url(#p)" stroke="#27A8E8"/><ellipse cx="38" cy="48" rx="23" ry="8" stroke="#66EFFF" stroke-opacity=".62"/></g>
+  <g transform="translate(0 0)"><use href="#base"/><path d="M29 19V32M35 15V34M41 18V31M47 22V29" stroke="#C0FBFF" stroke-width="3" stroke-linecap="round" filter="url(#g)"/></g>
+  <g transform="translate(191 0)"><use href="#base"/><path d="M24 20C34 15 43 19 44 25C45 31 37 35 28 31M27 26H49M31 32H43" stroke="#C0FBFF" stroke-width="2.5" stroke-linecap="round" filter="url(#g)"/></g>
+  <g transform="translate(0 78)"><use href="#base"/><text x="38" y="31" fill="#C0FBFF" font-size="10" font-family="Arial" text-anchor="middle" filter="url(#g)">PM2.5</text></g>
+  <g transform="translate(191 78)"><use href="#base"/><text x="38" y="31" fill="#C0FBFF" font-size="10" font-family="Arial" text-anchor="middle" filter="url(#g)">PM10</text></g>
+  <g transform="translate(0 156)"><use href="#base"/><path d="M38 15V34M32 31A9 9 0 1 0 44 31V15A6 6 0 0 0 32 15V31Z" stroke="#C0FBFF" stroke-width="2.5" filter="url(#g)"/></g>
+  <g transform="translate(191 156)"><use href="#base"/><path d="M38 14V34M32 31A9 9 0 1 0 44 31V14A6 6 0 0 0 32 14V31Z" stroke="#C0FBFF" stroke-width="2.5" filter="url(#g)"/></g>
+</svg>

@@ -1,0 +1,949 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.DashboardMapper">
+
+    <sql id="selectPageListSql">
+        select p.page_id as pageId, p.page_code as pageCode, p.page_name as pageName,
+               p.folder_id as folderId, f.folder_name as folderName,
+               p.status, p.is_deleted as isDeleted, p.delete_by as deleteBy, p.delete_time as deleteTime,
+               p.current_revision_id as currentRevisionId,
+               r.version_no as currentVersionNo,
+               p.create_by as createBy, p.create_time as createTime,
+               p.update_by as updateBy, p.update_time as updateTime, p.remark
+        from dashboard_page p
+        left join dashboard_page_folder f on f.folder_id = p.folder_id
+        left join dashboard_page_revision r on r.revision_id = p.current_revision_id
+        <where>
+            <choose>
+                <when test="includeDeleted == true">and p.is_deleted = '1'</when>
+                <otherwise>and p.is_deleted = '0'</otherwise>
+            </choose>
+            <if test="keyword != null and keyword != ''">
+                and (p.page_code like concat('%', #{keyword}, '%')
+                  or p.page_name like concat('%', #{keyword}, '%'))
+            </if>
+            <if test="folderId != null">and p.folder_id = #{folderId}</if>
+            <if test="folderIds != null">
+                <choose>
+                    <when test="folderIds.size() > 0">
+                        and p.folder_id in <foreach collection="folderIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+                    </when>
+                    <otherwise>and 1 = 0</otherwise>
+                </choose>
+            </if>
+        </where>
+        order by p.page_id desc
+    </sql>
+
+    <select id="selectPageList" resultType="map">
+        <bind name="folderIds" value="null"/>
+        <include refid="selectPageListSql"/>
+    </select>
+
+    <select id="selectPageListByFolders" resultType="map">
+        <bind name="folderId" value="null"/>
+        <include refid="selectPageListSql"/>
+    </select>
+
+    <!--
+        页面跳转目标只暴露可运行的发布版本。使用页面内版本号倒序而不是
+        current_revision_id，兼容历史数据中运行指针曾指向草稿的情况。
+    -->
+    <sql id="selectPublishedPageListSql">
+        select p.page_id as pageId, p.page_code as pageCode, p.page_name as pageName,
+               p.folder_id as folderId, f.folder_name as folderName,
+               r.revision_id as revisionId, r.version_no as versionNo,
+               r.version_no as version
+        from dashboard_page p
+        left join dashboard_page_folder f on f.folder_id = p.folder_id
+        join dashboard_page_revision r on r.page_id = p.page_id
+            and r.status = 'PUBLISHED'
+        where p.status = '0'
+          and p.is_deleted = '0'
+          and r.revision_id = (
+              select r2.revision_id
+              from dashboard_page_revision r2
+              where r2.page_id = p.page_id and r2.status = 'PUBLISHED'
+              order by r2.version_no desc, r2.revision_id desc
+              limit 1
+          )
+        <if test="keyword != null and keyword != ''">
+            and (p.page_code like concat('%', #{keyword}, '%')
+              or p.page_name like concat('%', #{keyword}, '%'))
+        </if>
+        <if test="folderId != null">and p.folder_id = #{folderId}</if>
+            <if test="folderIds != null">
+                <choose>
+                    <when test="folderIds.size() > 0">
+                        and p.folder_id in <foreach collection="folderIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+                    </when>
+                    <otherwise>and 1 = 0</otherwise>
+                </choose>
+            </if>
+        order by p.page_name asc, p.page_id asc
+    </sql>
+
+    <select id="selectPublishedPageList" resultType="map">
+        <bind name="folderIds" value="null"/>
+        <include refid="selectPublishedPageListSql"/>
+    </select>
+
+    <select id="selectPublishedPageListByFolders" resultType="map">
+        <bind name="folderId" value="null"/>
+        <include refid="selectPublishedPageListSql"/>
+    </select>
+
+    <select id="selectPageById" resultType="map">
+        select p.page_id as pageId, p.page_code as pageCode, p.page_name as pageName,
+               p.folder_id as folderId, f.folder_name as folderName,
+               p.status, p.is_deleted as isDeleted, p.delete_by as deleteBy, p.delete_time as deleteTime,
+               p.current_revision_id as currentRevisionId,
+               r.version_no as currentVersionNo,
+               p.create_by as createBy, p.create_time as createTime,
+               p.update_by as updateBy, p.update_time as updateTime, p.remark
+        from dashboard_page p
+        left join dashboard_page_folder f on f.folder_id = p.folder_id
+        left join dashboard_page_revision r on r.revision_id = p.current_revision_id
+        where p.page_id = #{pageId}
+    </select>
+
+    <select id="selectPageRecycleList" resultType="map">
+        select p.page_id as pageId, p.page_code as pageCode, p.page_name as pageName,
+               p.folder_id as folderId, f.folder_name as folderName,
+               p.status, p.is_deleted as isDeleted, p.delete_by as deleteBy, p.delete_time as deleteTime,
+               p.current_revision_id as currentRevisionId,
+               r.version_no as currentVersionNo,
+               p.create_by as createBy, p.create_time as createTime,
+               p.update_by as updateBy, p.update_time as updateTime, p.remark
+        from dashboard_page p
+        left join dashboard_page_folder f on f.folder_id = p.folder_id
+        left join dashboard_page_revision r on r.revision_id = p.current_revision_id
+        where p.is_deleted = '1'
+        <if test="keyword != null and keyword != ''">
+            and (p.page_code like concat('%', #{keyword}, '%')
+              or p.page_name like concat('%', #{keyword}, '%'))
+        </if>
+        order by p.delete_time desc, p.page_id desc
+    </select>
+
+    <select id="selectPageByCode" resultType="map">
+        select page_id as pageId, page_code as pageCode, page_name as pageName,
+               status, is_deleted as isDeleted, current_revision_id as currentRevisionId,
+               (select version_no from dashboard_page_revision where revision_id = p.current_revision_id) as currentVersionNo,
+               create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_page p where page_code = #{pageCode}
+    </select>
+
+    <insert id="insertPage" parameterType="map" useGeneratedKeys="true" keyProperty="pageId">
+        insert into dashboard_page
+        (page_code, page_name, folder_id, status, is_deleted, create_by, create_time, remark)
+        values
+        (#{pageCode}, #{pageName}, #{folderId}, #{status}, '0', #{createBy}, now(), #{remark})
+    </insert>
+
+    <update id="updatePage" parameterType="map">
+        update dashboard_page
+        <set>
+            <if test="pageName != null">page_name = #{pageName},</if>
+            <if test="folderId != null">folder_id = #{folderId},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_by = #{updateBy}, update_time = now()
+        </set>
+        where page_id = #{pageId}
+    </update>
+
+    <update id="softDeletePage">
+        update dashboard_page set is_deleted = '1', delete_by = #{deleteBy}, delete_time = now(),
+            status = '1', update_by = #{deleteBy}, update_time = now()
+        where page_id = #{pageId} and is_deleted = '0'
+    </update>
+
+    <update id="restorePage">
+        update dashboard_page set is_deleted = '0', delete_by = null, delete_time = null,
+            status = '0', update_by = #{updateBy}, update_time = now()
+        where page_id = #{pageId} and is_deleted = '1'
+    </update>
+
+    <delete id="purgePage">
+        delete from dashboard_page where page_id = #{pageId} and is_deleted = '1'
+    </delete>
+
+    <delete id="purgeRecycleBin">
+        delete from dashboard_page where is_deleted = '1'
+    </delete>
+
+    <select id="selectPageFolderList" resultType="map">
+        select folder_id as folderId, folder_code as folderCode, folder_name as folderName,
+               parent_id as parentId, sort_order as sortOrder, status,
+               create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_page_folder
+        where status = '0'
+        order by sort_order asc, folder_id asc
+    </select>
+
+    <select id="selectPageFolderById" resultType="map">
+        select folder_id as folderId, folder_code as folderCode, folder_name as folderName,
+               parent_id as parentId, sort_order as sortOrder, status,
+               create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_page_folder where folder_id = #{folderId}
+    </select>
+
+    <select id="selectPageFolderByCode" resultType="map">
+        select folder_id as folderId, folder_code as folderCode, folder_name as folderName,
+               parent_id as parentId, sort_order as sortOrder, status,
+               create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_page_folder where folder_code = #{folderCode}
+    </select>
+
+    <insert id="insertPageFolder" parameterType="map" useGeneratedKeys="true" keyProperty="folderId">
+        insert into dashboard_page_folder
+        (folder_code, folder_name, parent_id, sort_order, status, create_by, create_time, remark)
+        values (#{folderCode}, #{folderName}, #{parentId}, #{sortOrder}, '0', #{createBy}, now(), #{remark})
+    </insert>
+
+    <update id="updatePageFolder" parameterType="map">
+        update dashboard_page_folder
+        <set>
+            <if test="folderName != null">folder_name = #{folderName},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_by = #{updateBy}, update_time = now()
+        </set>
+        where folder_id = #{folderId}
+    </update>
+
+    <delete id="deletePageFolder">
+        delete from dashboard_page_folder where folder_id = #{folderId}
+    </delete>
+
+    <select id="countPagesInFolder" resultType="int">
+        select count(*) from dashboard_page where folder_id = #{folderId} and is_deleted = '0'
+    </select>
+
+    <select id="countChildFolders" resultType="int">
+        select count(*) from dashboard_page_folder where parent_id = #{folderId} and status = '0'
+    </select>
+
+    <select id="selectRevisionList" resultType="map">
+        select revision_id as revisionId, page_id as pageId, version_no as versionNo,
+               status, schema_hash as schemaHash, publish_note as publishNote,
+               create_by as createBy, create_time as createTime,
+               publish_by as publishBy, publish_time as publishTime
+        from dashboard_page_revision
+        where page_id = #{pageId}
+        order by version_no desc
+    </select>
+
+    <select id="selectRevisionById" resultType="map">
+        select revision_id as revisionId, page_id as pageId, version_no as versionNo,
+               status, schema_json as schemaJson, schema_hash as schemaHash,
+               publish_note as publishNote, create_by as createBy, create_time as createTime,
+               publish_by as publishBy, publish_time as publishTime
+        from dashboard_page_revision where revision_id = #{revisionId}
+    </select>
+
+    <insert id="insertRevision" parameterType="map" useGeneratedKeys="true" keyProperty="revisionId">
+        insert into dashboard_page_revision
+        (page_id, version_no, status, schema_json, schema_hash, publish_note, create_by, create_time)
+        values
+        (#{pageId}, #{versionNo}, #{status}, #{schemaJson}, #{schemaHash}, #{publishNote}, #{createBy}, now())
+    </insert>
+
+    <update id="updateRevisionContent" parameterType="map">
+        update dashboard_page_revision
+        set schema_json = #{schemaJson}, schema_hash = #{schemaHash},
+            update_by = #{updateBy}, update_time = now()
+        where revision_id = #{revisionId} and status = 'DRAFT'
+    </update>
+
+    <update id="updateRevisionStatus">
+        update dashboard_page_revision
+        set status = #{status}, publish_by = #{publishBy}, publish_time = now(), publish_note = #{publishNote}
+        where revision_id = #{revisionId}
+    </update>
+
+    <update id="updateCurrentRevision">
+        update dashboard_page set current_revision_id = #{revisionId}, update_time = now()
+        where page_id = #{pageId}
+    </update>
+
+    <sql id="datasetListSelect">
+        select dataset_id as datasetId, dataset_code as datasetCode, dataset_name as datasetName,
+               group_code as groupCode, data_type as dataType, config_json as configJson,
+               field_schema_json as fieldSchemaJson, param_schema_json as paramSchemaJson,
+               status, timeout_seconds as timeoutSeconds, refresh_seconds as refreshSeconds,
+               last_test_at as lastTestAt, last_test_status as lastTestStatus,
+               create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_dataset
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (dataset_code like concat('%', #{keyword}, '%')
+                  or dataset_name like concat('%', #{keyword}, '%'))
+            </if>
+            <if test="dataType != null and dataType != ''">
+                and data_type = #{dataType}
+            </if>
+            <if test="groupCode != null and groupCode != ''">
+                and group_code = #{groupCode}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectDatasetList" resultType="map">
+        <include refid="datasetListSelect"/>
+        order by dataset_id desc
+    </select>
+
+    <select id="selectDatasetListByFolders" resultType="map">
+        select dataset_id as datasetId, dataset_code as datasetCode, dataset_name as datasetName,
+               group_code as groupCode, data_type as dataType, config_json as configJson,
+               coalesce((select g.group_id from dashboard_dataset_group g where g.group_code = d.group_code), 0) as folderId,
+               (select g.group_name from dashboard_dataset_group g where g.group_code = d.group_code) as folderName,
+               field_schema_json as fieldSchemaJson, param_schema_json as paramSchemaJson,
+               status, timeout_seconds as timeoutSeconds, refresh_seconds as refreshSeconds,
+               last_test_at as lastTestAt, last_test_status as lastTestStatus,
+               create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_dataset d
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (dataset_code like concat('%', #{keyword}, '%') or dataset_name like concat('%', #{keyword}, '%'))
+            </if>
+            <if test="dataType != null and dataType != ''">and data_type = #{dataType}</if>
+            <if test="groupCode != null and groupCode != ''">and group_code = #{groupCode}</if>
+            <if test="folderGroupCodes != null">
+                <choose>
+                    <when test="folderGroupCodes.size() > 0">
+                        and group_code in <foreach collection="folderGroupCodes" item="code" open="(" separator="," close=")">#{code}</foreach>
+                    </when>
+                    <otherwise>and 1 = 0</otherwise>
+                </choose>
+            </if>
+        </where>
+        order by dataset_id desc
+    </select>
+
+    <select id="selectDatasetById" resultType="map">
+        select dataset_id as datasetId, dataset_code as datasetCode, dataset_name as datasetName,
+               group_code as groupCode, data_type as dataType, config_json as configJson,
+               field_schema_json as fieldSchemaJson, param_schema_json as paramSchemaJson,
+               status, timeout_seconds as timeoutSeconds, refresh_seconds as refreshSeconds,
+               last_test_at as lastTestAt, last_test_status as lastTestStatus,
+               create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_dataset where dataset_id = #{datasetId}
+    </select>
+
+    <select id="selectDatasetByCode" resultType="map">
+        select dataset_id as datasetId, dataset_code as datasetCode, dataset_name as datasetName,
+               group_code as groupCode, data_type as dataType, config_json as configJson,
+               field_schema_json as fieldSchemaJson, param_schema_json as paramSchemaJson,
+               status, timeout_seconds as timeoutSeconds, refresh_seconds as refreshSeconds,
+               last_test_at as lastTestAt, last_test_status as lastTestStatus,
+               create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_dataset where dataset_code = #{datasetCode}
+    </select>
+
+    <insert id="insertDataset" parameterType="map" useGeneratedKeys="true" keyProperty="datasetId">
+        insert into dashboard_dataset
+        (dataset_code, dataset_name, group_code, data_type, config_json, field_schema_json,
+         param_schema_json, status, timeout_seconds, refresh_seconds, create_by, create_time, remark)
+        values
+        (#{datasetCode}, #{datasetName}, #{groupCode}, #{dataType}, #{configJson}, #{fieldSchemaJson},
+         #{paramSchemaJson}, #{status}, #{timeoutSeconds}, #{refreshSeconds}, #{createBy}, now(), #{remark})
+    </insert>
+
+    <update id="updateDataset" parameterType="map">
+        update dashboard_dataset
+        <set>
+            <if test="datasetName != null">dataset_name = #{datasetName},</if>
+            <if test="groupCode != null">group_code = #{groupCode},</if>
+            <if test="dataType != null">data_type = #{dataType},</if>
+            <if test="configJson != null">config_json = #{configJson},</if>
+            <if test="fieldSchemaJson != null">field_schema_json = #{fieldSchemaJson},</if>
+            <if test="paramSchemaJson != null">param_schema_json = #{paramSchemaJson},</if>
+            <if test="clearLastTest == true">last_test_status = null, last_test_at = null,</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="timeoutSeconds != null">timeout_seconds = #{timeoutSeconds},</if>
+            <if test="refreshSeconds != null">refresh_seconds = #{refreshSeconds},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_by = #{updateBy}, update_time = now()
+        </set>
+        where dataset_id = #{datasetId}
+    </update>
+
+    <delete id="deleteDataset">
+        delete from dashboard_dataset where dataset_id = #{datasetId}
+    </delete>
+
+    <update id="updateDatasetTestResult">
+        update dashboard_dataset set last_test_status = #{status}, last_test_at = now()
+        where dataset_id = #{datasetId}
+    </update>
+
+    <update id="updateDatasetFieldSchema">
+        update dashboard_dataset set field_schema_json = #{fieldSchemaJson}, update_time = now()
+        where dataset_id = #{datasetId}
+    </update>
+
+    <select id="selectDatasetGroupList" resultType="map">
+        select group_id as groupId, group_code as groupCode, group_name as groupName,
+               parent_id as parentId,
+               sort_order as sortOrder, create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_dataset_group
+        order by sort_order asc, group_id asc
+    </select>
+
+    <select id="selectDatasetGroupById" resultType="map">
+        select group_id as groupId, group_code as groupCode, group_name as groupName,
+               parent_id as parentId,
+               sort_order as sortOrder, create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_dataset_group where group_id = #{groupId}
+    </select>
+
+    <select id="selectDatasetGroupByCode" resultType="map">
+        select group_id as groupId, group_code as groupCode, group_name as groupName,
+               parent_id as parentId,
+               sort_order as sortOrder, create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_dataset_group where group_code = #{groupCode}
+    </select>
+
+    <insert id="insertDatasetGroup" parameterType="map" useGeneratedKeys="true" keyProperty="groupId">
+        insert into dashboard_dataset_group
+        (group_code, group_name, parent_id, sort_order, create_by, create_time, remark)
+        values (#{groupCode}, #{groupName}, #{parentId}, #{sortOrder}, #{createBy}, now(), #{remark})
+    </insert>
+
+    <update id="updateDatasetGroup" parameterType="map">
+        update dashboard_dataset_group
+        <set>
+            <if test="groupName != null">group_name = #{groupName},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_by = #{updateBy}, update_time = now()
+        </set>
+        where group_id = #{groupId}
+    </update>
+
+    <delete id="deleteDatasetGroup">
+        delete from dashboard_dataset_group where group_id = #{groupId}
+    </delete>
+
+    <select id="countDatasetsInGroup" resultType="int">
+        select count(*) from dashboard_dataset where group_code = #{groupCode}
+    </select>
+
+    <select id="countChildDatasetGroups" resultType="int">
+        select count(*) from dashboard_dataset_group where parent_id = #{groupId}
+    </select>
+
+    <select id="selectResourceFolderList" resultType="map">
+        select folder_id as folderId, folder_code as folderCode, folder_name as folderName,
+               parent_id as parentId, sort_order as sortOrder, status,
+               create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_resource_folder
+        where status = '0'
+        order by sort_order asc, folder_id asc
+    </select>
+
+    <select id="selectResourceFolderById" resultType="map">
+        select folder_id as folderId, folder_code as folderCode, folder_name as folderName,
+               parent_id as parentId, sort_order as sortOrder, status,
+               create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_resource_folder where folder_id = #{folderId}
+    </select>
+
+    <select id="selectResourceFolderByCode" resultType="map">
+        select folder_id as folderId, folder_code as folderCode, folder_name as folderName,
+               parent_id as parentId, sort_order as sortOrder, status,
+               create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_resource_folder where folder_code = #{folderCode}
+    </select>
+
+    <insert id="insertResourceFolder" parameterType="map" useGeneratedKeys="true" keyProperty="folderId">
+        insert into dashboard_resource_folder
+        (folder_code, folder_name, parent_id, sort_order, status, create_by, create_time, remark)
+        values (#{folderCode}, #{folderName}, #{parentId}, #{sortOrder}, '0', #{createBy}, now(), #{remark})
+    </insert>
+
+    <update id="updateResourceFolder" parameterType="map">
+        update dashboard_resource_folder
+        <set>
+            <if test="folderName != null">folder_name = #{folderName},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_by = #{updateBy}, update_time = now()
+        </set>
+        where folder_id = #{folderId}
+    </update>
+
+    <delete id="deleteResourceFolder">
+        delete from dashboard_resource_folder where folder_id = #{folderId}
+    </delete>
+
+    <select id="countAssetsInResourceFolder" resultType="int">
+        select count(*) from dashboard_asset where folder_id = #{folderId}
+    </select>
+
+    <select id="countMapsInResourceFolder" resultType="int">
+        select count(*) from dashboard_map_resource where folder_id = #{folderId}
+    </select>
+
+    <select id="countChildResourceFolders" resultType="int">
+        select count(*) from dashboard_resource_folder where parent_id = #{folderId} and status = '0'
+    </select>
+
+    <select id="selectShareList" resultType="map">
+        select share_id as shareId, page_id as pageId, revision_id as revisionId, version_mode as versionMode,
+               share_token as token, expires_at as expiresAt, status, created_by as createdBy,
+               created_at as createdAt, last_access_at as lastAccessAt
+        from dashboard_share
+        where page_id = #{pageId}
+        order by share_id desc
+    </select>
+
+    <select id="selectShareMemberships" resultType="map">
+        select share_id as shareId, page_id as pageId, revision_id as revisionId,
+               is_entry as isEntry, sort_order as sortOrder
+        from dashboard_share_page where share_id = #{shareId}
+        order by is_entry desc, sort_order asc, page_id asc
+    </select>
+
+    <select id="selectSharePageList" resultType="map">
+        select sp.share_id as shareId, sp.page_id as pageId,
+               p.page_code as pageCode, p.page_name as pageName,
+               p.status as pageStatus, p.is_deleted as pageDeleted,
+               sp.revision_id as revisionId, r.version_no as versionNo,
+               r.status as revisionStatus,
+               sp.is_entry as isEntry, sp.sort_order as sortOrder,
+               sp.created_at as createdAt
+        from dashboard_share_page sp
+        join dashboard_page p on p.page_id = sp.page_id
+        join dashboard_page_revision r on r.revision_id = sp.revision_id
+        where sp.share_id = #{shareId}
+        order by sp.is_entry desc, sp.sort_order asc, sp.page_id asc
+    </select>
+
+    <select id="selectSharePageByCode" resultType="map">
+        select sp.share_id as shareId, sp.page_id as pageId,
+               p.page_code as pageCode, p.page_name as pageName,
+               p.status as pageStatus, p.is_deleted as pageDeleted,
+               sp.revision_id as revisionId, r.version_no as versionNo,
+               r.status as revisionStatus,
+               sp.is_entry as isEntry, sp.sort_order as sortOrder
+        from dashboard_share_page sp
+        join dashboard_page p on p.page_id = sp.page_id
+        left join dashboard_page_revision r on r.revision_id = sp.revision_id
+        where sp.share_id = #{shareId} and p.page_code = #{pageCode}
+        limit 1
+    </select>
+
+    <insert id="insertSharePage" parameterType="map">
+        insert into dashboard_share_page
+        (share_id, page_id, revision_id, is_entry, sort_order, created_at)
+        values (#{shareId}, #{pageId}, #{revisionId}, #{isEntry}, #{sortOrder}, now())
+    </insert>
+
+    <select id="selectShareByTokenHash" resultType="map">
+        select s.share_id as shareId, s.page_id as pageId, s.revision_id as revisionId,
+               p.page_code as pageCode,
+               s.token_hash as tokenHash, s.expires_at as expiresAt, s.status, s.version_mode as versionMode,
+               s.created_by as createdBy, s.created_at as createdAt, s.last_access_at as lastAccessAt
+        from dashboard_share s
+        left join dashboard_page p on p.page_id = s.page_id
+        where s.token_hash = #{tokenHash}
+        limit 1
+    </select>
+
+    <insert id="insertShare" parameterType="map" useGeneratedKeys="true" keyProperty="shareId">
+        insert into dashboard_share
+        (page_id, revision_id, token_hash, share_token, expires_at, status, version_mode, created_by, created_at)
+        values
+        (#{pageId}, #{revisionId}, #{tokenHash}, #{token}, #{expiresAt}, #{status}, #{versionMode}, #{createdBy}, now())
+    </insert>
+
+    <select id="selectShareForUpdate" resultType="map">
+        select share_id as shareId, page_id as pageId, revision_id as revisionId,
+               expires_at as expiresAt, status, version_mode as versionMode
+        from dashboard_share where share_id = #{shareId} and page_id = #{pageId}
+        for update
+    </select>
+
+    <select id="selectRevisionMetadata" resultType="map">
+        select revision_id as revisionId, page_id as pageId, version_no as versionNo, status
+        from dashboard_page_revision where revision_id = #{revisionId}
+    </select>
+
+    <!-- 与正式运行一致：优先当前 PUBLISHED 指针，历史草稿指针回退至最新发布。 -->
+    <select id="selectRuntimeRevisionMetadata" resultType="map">
+        select revision_id as revisionId, page_id as pageId, version_no as versionNo, status
+        from dashboard_page_revision where page_id = #{pageId} and status = 'PUBLISHED'
+        order by case when revision_id = #{currentRevisionId} then 0 else 1 end,
+                 version_no desc, revision_id desc
+        limit 1
+    </select>
+
+    <update id="updateShareVersionMode">
+        update dashboard_share set version_mode = #{versionMode}, revision_id = #{revisionId}
+        where share_id = #{shareId} and page_id = #{pageId} and status = 'ACTIVE'
+    </update>
+
+    <update id="updateSharePageRevision">
+        update dashboard_share_page set revision_id = #{revisionId}
+        where share_id = #{shareId} and page_id = #{pageId}
+    </update>
+
+    <update id="touchShare">
+        update dashboard_share set last_access_at = now()
+        where share_id = #{shareId} and status = 'ACTIVE'
+    </update>
+
+    <update id="revokeShare">
+        update dashboard_share set status = 'REVOKED'
+        where share_id = #{shareId} and page_id = #{pageId} and status = 'ACTIVE'
+    </update>
+
+    <sql id="dataSourcePageFilters">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and locate(lower(#{keyword}), lower(concat(s.source_code, ' ', s.source_name))) > 0
+            </if>
+            <if test="type != null and type != ''">and upper(s.source_type) = upper(#{type})</if>
+            <if test="status != null and status != ''">and upper(s.status) = upper(#{status})</if>
+            <if test="environment != null and environment != ''">
+                and upper(case when json_valid(s.config_json)
+                    then coalesce(json_unquote(json_extract(s.config_json, '$.environment')), '') else '' end) = upper(#{environment})
+            </if>
+            <if test="folderIds != null">
+                <choose>
+                    <when test="folderIds.size() > 0">
+                        and s.folder_id in <foreach collection="folderIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+                    </when>
+                    <otherwise>and 1 = 0</otherwise>
+                </choose>
+            </if>
+        </where>
+    </sql>
+
+    <select id="countDataSourcesByFilters" resultType="long">
+        select count(*) from dashboard_data_source s
+        <include refid="dataSourcePageFilters"/>
+    </select>
+
+    <select id="selectDataSourcePage" resultType="map">
+        select s.data_source_id as dataSourceId, s.source_code as sourceCode, s.source_name as sourceName,
+               s.source_type as sourceType, s.folder_id as folderId, f.folder_name as folderName,
+               s.config_json as configJson, s.status, s.remark
+        from dashboard_data_source s
+        left join dashboard_data_folder f on f.folder_id = s.folder_id and f.scope = 'source'
+        <include refid="dataSourcePageFilters"/>
+        order by s.data_source_id desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <select id="selectDataSourceList" resultType="map">
+        select data_source_id as dataSourceId, source_code as sourceCode,
+               source_name as sourceName, source_type as sourceType,
+               folder_id as folderId,
+               (select f.folder_name from dashboard_data_folder f where f.folder_id = s.folder_id and f.scope = 'source') as folderName,
+               config_json as configJson, secret_ciphertext as secretCiphertext,
+               status, create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_data_source s
+        order by data_source_id desc
+    </select>
+
+    <select id="selectDataSourceById" resultType="map">
+        select data_source_id as dataSourceId, source_code as sourceCode,
+               source_name as sourceName, source_type as sourceType,
+               folder_id as folderId,
+               (select f.folder_name from dashboard_data_folder f where f.folder_id = s.folder_id and f.scope = 'source') as folderName,
+               config_json as configJson, secret_ciphertext as secretCiphertext,
+               status, create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_data_source s where data_source_id = #{dataSourceId}
+    </select>
+
+    <select id="selectDataSourceByCode" resultType="map">
+        select data_source_id as dataSourceId, source_code as sourceCode,
+               source_name as sourceName, source_type as sourceType,
+               folder_id as folderId,
+               (select f.folder_name from dashboard_data_folder f where f.folder_id = s.folder_id and f.scope = 'source') as folderName,
+               config_json as configJson, secret_ciphertext as secretCiphertext,
+               status, create_by as createBy, create_time as createTime,
+               update_by as updateBy, update_time as updateTime, remark
+        from dashboard_data_source s where source_code = #{sourceCode}
+    </select>
+
+    <insert id="insertDataSource" parameterType="map" useGeneratedKeys="true" keyProperty="dataSourceId">
+        insert into dashboard_data_source
+        (source_code, source_name, source_type, folder_id, config_json, secret_ciphertext,
+         status, create_by, create_time, remark)
+        values
+        (#{sourceCode}, #{sourceName}, #{sourceType}, #{folderId}, #{configJson}, #{secretCiphertext},
+         #{status}, #{createBy}, now(), #{remark})
+    </insert>
+
+    <update id="updateDataSource" parameterType="map">
+        update dashboard_data_source
+        <set>
+            <if test="sourceName != null">source_name = #{sourceName},</if>
+            <if test="folderId != null">folder_id = #{folderId},</if>
+            <if test="sourceType != null">source_type = #{sourceType},</if>
+            <if test="configJson != null">config_json = #{configJson},</if>
+            <if test="secretCiphertext != null">secret_ciphertext = #{secretCiphertext},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_by = #{updateBy}, update_time = now()
+        </set>
+        where data_source_id = #{dataSourceId}
+    </update>
+
+    <delete id="deleteDataSource">
+        delete from dashboard_data_source where data_source_id = #{dataSourceId}
+    </delete>
+
+    <select id="countDatasetReferences" resultType="int">
+        select count(*) from dashboard_dataset
+        where config_json like concat('%', #{sourceCode}, '%')
+    </select>
+
+    <sql id="selectAssetListSql">
+        select a.asset_id as assetId, a.asset_code as assetCode, a.asset_name as assetName,
+               a.folder_id as folderId, f.folder_name as folderName,
+               a.asset_type as assetType, a.category, a.resource_path as resourcePath,
+               a.mime_type as mimeType, a.file_size as fileSize, a.status,
+               a.create_by as createBy, a.create_time as createTime,
+               a.update_by as updateBy, a.update_time as updateTime, a.remark
+        from dashboard_asset a
+        left join dashboard_resource_folder f on f.folder_id = a.folder_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (a.asset_code like concat('%', #{keyword}, '%')
+                  or a.asset_name like concat('%', #{keyword}, '%')
+                  or a.category like concat('%', #{keyword}, '%'))
+            </if>
+            <if test="assetType != null and assetType != ''">and a.asset_type = #{assetType}</if>
+            <if test="folderId != null">and a.folder_id = #{folderId}</if>
+            <if test="folderIds != null">
+                <choose>
+                    <when test="folderIds.size() > 0">
+                        and a.folder_id in <foreach collection="folderIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+                    </when>
+                    <otherwise>and 1 = 0</otherwise>
+                </choose>
+            </if>
+        </where>
+        order by a.asset_id desc
+    </sql>
+
+    <select id="selectAssetList" resultType="map">
+        <bind name="folderIds" value="null"/>
+        <include refid="selectAssetListSql"/>
+    </select>
+
+    <select id="selectAssetListByFolders" resultType="map">
+        <bind name="folderId" value="null"/>
+        <include refid="selectAssetListSql"/>
+    </select>
+
+    <select id="selectAssetById" resultType="map">
+        select a.asset_id as assetId, a.asset_code as assetCode, a.asset_name as assetName,
+               a.folder_id as folderId, f.folder_name as folderName,
+               a.asset_type as assetType, a.category, a.resource_path as resourcePath,
+               a.mime_type as mimeType, a.file_size as fileSize, a.status,
+               a.create_by as createBy, a.create_time as createTime,
+               a.update_by as updateBy, a.update_time as updateTime, a.remark
+        from dashboard_asset a
+        left join dashboard_resource_folder f on f.folder_id = a.folder_id
+        where a.asset_id = #{assetId}
+    </select>
+
+    <select id="selectAssetByCode" resultType="map">
+        select a.asset_id as assetId, a.asset_code as assetCode, a.asset_name as assetName,
+               a.folder_id as folderId, f.folder_name as folderName,
+               a.asset_type as assetType, a.category, a.resource_path as resourcePath,
+               a.mime_type as mimeType, a.file_size as fileSize, a.status,
+               a.create_by as createBy, a.create_time as createTime,
+               a.update_by as updateBy, a.update_time as updateTime, a.remark
+        from dashboard_asset a
+        left join dashboard_resource_folder f on f.folder_id = a.folder_id
+        where a.asset_code = #{assetCode}
+    </select>
+
+    <insert id="insertAsset" parameterType="map" useGeneratedKeys="true" keyProperty="assetId">
+        insert into dashboard_asset
+        (asset_code, asset_name, folder_id, asset_type, category, resource_path, mime_type,
+         file_size, status, create_by, create_time, remark)
+        values (#{assetCode}, #{assetName}, #{folderId}, #{assetType}, #{category}, #{resourcePath}, #{mimeType},
+                #{fileSize}, #{status}, #{createBy}, now(), #{remark})
+    </insert>
+
+    <update id="updateAsset" parameterType="map">
+        update dashboard_asset
+        <set>
+            <if test="assetName != null">asset_name = #{assetName},</if>
+            <if test="folderId != null">folder_id = #{folderId},</if>
+            <if test="category != null">category = #{category},</if>
+            <if test="resourcePath != null">resource_path = #{resourcePath},</if>
+            <if test="mimeType != null">mime_type = #{mimeType},</if>
+            <if test="fileSize != null">file_size = #{fileSize},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_by = #{updateBy}, update_time = now()
+        </set>
+        where asset_id = #{assetId}
+    </update>
+
+    <delete id="deleteAsset">
+        delete from dashboard_asset where asset_id = #{assetId}
+    </delete>
+
+    <sql id="selectMapResourceListSql">
+        select m.map_id as mapId, m.map_code as mapCode, m.map_name as mapName,
+               m.folder_id as folderId, f.folder_name as folderName,
+               m.status, m.create_by as createBy, m.create_time as createTime,
+               m.update_by as updateBy, m.update_time as updateTime, m.remark,
+               char_length(m.geojson_json) as jsonSize
+        from dashboard_map_resource m
+        left join dashboard_resource_folder f on f.folder_id = m.folder_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (m.map_code like concat('%', #{keyword}, '%')
+                  or m.map_name like concat('%', #{keyword}, '%'))
+            </if>
+            <if test="folderId != null">and m.folder_id = #{folderId}</if>
+            <if test="folderIds != null">
+                <choose>
+                    <when test="folderIds.size() > 0">
+                        and m.folder_id in <foreach collection="folderIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+                    </when>
+                    <otherwise>and 1 = 0</otherwise>
+                </choose>
+            </if>
+        </where>
+        order by m.map_id desc
+    </sql>
+
+    <select id="selectMapResourceList" resultType="map">
+        <bind name="folderIds" value="null"/>
+        <include refid="selectMapResourceListSql"/>
+    </select>
+
+    <select id="selectMapResourceListByFolders" resultType="map">
+        <bind name="folderId" value="null"/>
+        <include refid="selectMapResourceListSql"/>
+    </select>
+
+    <!-- 合并后的目录在数据库中统一筛选和分页，避免每页重复插入内置地图。 -->
+    <sql id="selectMapResourcePageSql">
+        select catalog.map_id as mapId, catalog.map_code as mapCode, catalog.map_name as mapName,
+               catalog.folder_id as folderId, catalog.folder_name as folderName,
+               catalog.status, catalog.create_by as createBy, catalog.create_time as createTime,
+               catalog.update_by as updateBy, catalog.update_time as updateTime, catalog.remark,
+               catalog.json_size as jsonSize, catalog.builtin
+        from (
+            select null as map_id, 'demo-region' as map_code, '内置示例区域' as map_name,
+                   0 as folder_id, null as folder_name, '0' as status,
+                   null as create_by, null as create_time, null as update_by, null as update_time,
+                   null as remark, null as json_size, 1 as builtin
+            union all
+            select m.map_id, m.map_code, m.map_name, m.folder_id, f.folder_name,
+                   m.status, m.create_by, m.create_time, m.update_by, m.update_time, m.remark,
+                   char_length(m.geojson_json) as json_size, 0 as builtin
+            from dashboard_map_resource m
+            left join dashboard_resource_folder f on f.folder_id = m.folder_id
+        ) catalog
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (locate(lower(#{keyword}), lower(catalog.map_code)) > 0
+                  or locate(lower(#{keyword}), lower(catalog.map_name)) > 0)
+            </if>
+            <if test="folderId != null">and catalog.folder_id = #{folderId}</if>
+            <if test="folderIds != null">
+                <choose>
+                    <when test="folderIds.size() > 0">
+                        and catalog.folder_id in <foreach collection="folderIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+                    </when>
+                    <otherwise>and 1 = 0</otherwise>
+                </choose>
+            </if>
+        </where>
+        order by catalog.builtin desc, catalog.map_id desc
+    </sql>
+
+    <select id="selectMapResourcePage" resultType="map">
+        <bind name="folderIds" value="null"/>
+        <include refid="selectMapResourcePageSql"/>
+    </select>
+
+    <select id="selectMapResourcePageByFolders" resultType="map">
+        <bind name="folderId" value="null"/>
+        <include refid="selectMapResourcePageSql"/>
+    </select>
+
+    <select id="selectMapResourceById" resultType="map">
+        select m.map_id as mapId, m.map_code as mapCode, m.map_name as mapName,
+               m.folder_id as folderId, f.folder_name as folderName,
+               m.geojson_json as geojsonJson, m.status,
+               m.create_by as createBy, m.create_time as createTime,
+               m.update_by as updateBy, m.update_time as updateTime, m.remark
+        from dashboard_map_resource m
+        left join dashboard_resource_folder f on f.folder_id = m.folder_id
+        where m.map_id = #{mapId}
+    </select>
+
+    <select id="selectMapResourceByCode" resultType="map">
+        select m.map_id as mapId, m.map_code as mapCode, m.map_name as mapName,
+               m.folder_id as folderId, f.folder_name as folderName,
+               m.geojson_json as geojsonJson, m.status,
+               m.create_by as createBy, m.create_time as createTime,
+               m.update_by as updateBy, m.update_time as updateTime, m.remark
+        from dashboard_map_resource m
+        left join dashboard_resource_folder f on f.folder_id = m.folder_id
+        where m.map_code = #{mapCode}
+    </select>
+
+    <insert id="insertMapResource" parameterType="map" useGeneratedKeys="true" keyProperty="mapId">
+        insert into dashboard_map_resource
+        (map_code, map_name, folder_id, geojson_json, status, create_by, create_time, remark)
+        values (#{mapCode}, #{mapName}, #{folderId}, #{geojsonJson}, #{status}, #{createBy}, now(), #{remark})
+    </insert>
+
+    <update id="updateMapResource" parameterType="map">
+        update dashboard_map_resource
+        <set>
+            <if test="mapName != null">map_name = #{mapName},</if>
+            <if test="folderId != null">folder_id = #{folderId},</if>
+            <if test="geojsonJson != null">geojson_json = #{geojsonJson},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_by = #{updateBy}, update_time = now()
+        </set>
+        where map_id = #{mapId}
+    </update>
+
+    <delete id="deleteMapResource">
+        delete from dashboard_map_resource where map_id = #{mapId}
+    </delete>
+</mapper>

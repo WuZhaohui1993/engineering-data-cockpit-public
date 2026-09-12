@@ -1,0 +1,22 @@
+# 本地工作区输出
+ruoyi-ui/node_modules/
+ruoyi-ui/dist/
+ruoyi-backend/**/target/
+ruoyi-backend/**/logs/
+ruoyi-backend/**/uploadPath/
+
+# 根目录下的前端目录是当前维护的 Vue 3 前端。
+ruoyi-backend/ruoyi-ui/
+
+# Local runtime/configuration (may contain database credentials)
+config/ruoyi-local.env
+.local/
+.tmp-test-assets/
+
+# Raw database backups must remain local; only reviewed sanitized snapshots may be committed
+database/backups/**/*_full.sql
+database/backups/**/*_raw.sql
+
+# Local OS/editor files
+.DS_Store
+*.log

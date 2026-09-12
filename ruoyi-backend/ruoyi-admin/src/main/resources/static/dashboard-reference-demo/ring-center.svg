@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80" fill="none">
+  <defs><radialGradient id="r" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(40 40) rotate(90) scale(38)"><stop stop-color="#173A57"/><stop offset=".58" stop-color="#102C46"/><stop offset="1" stop-color="#081E32" stop-opacity=".92"/></radialGradient><filter id="g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  <circle cx="40" cy="40" r="37" fill="url(#r)" stroke="#4380AE" stroke-opacity=".42"/>
+  <circle cx="40" cy="40" r="29" stroke="#3A79A7" stroke-opacity=".42" stroke-dasharray="1 3"/>
+  <circle cx="40" cy="40" r="22" stroke="#57A5D0" stroke-opacity=".25"/>
+  <path d="M40 5V10M40 70V75M5 40H10M70 40H75" stroke="#57C8F3" stroke-opacity=".68" filter="url(#g)"/>
+</svg>

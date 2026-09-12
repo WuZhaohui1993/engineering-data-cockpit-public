@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.DashboardIntegrationPolicyMapper">
+    <select id="selectPolicy" resultType="map">
+        SELECT config_json AS configJson FROM dashboard_integration_policy WHERE policy_key = 'GLOBAL'
+    </select>
+    <insert id="savePolicy">
+        INSERT INTO dashboard_integration_policy(policy_key, config_json, update_by, update_time)
+        VALUES('GLOBAL', #{configJson}, #{actor}, NOW())
+        ON DUPLICATE KEY UPDATE config_json = VALUES(config_json), update_by = VALUES(update_by), update_time = NOW()
+    </insert>
+    <delete id="deleteExpiredConfirmedAlerts">
+        DELETE FROM dashboard_integration_alert
+        WHERE status = 'ACKNOWLEDGED' AND last_at &lt; #{cutoff}
+        ORDER BY last_at, alert_id LIMIT #{limit}
+    </delete>
+    <delete id="deleteExpiredTestLogs">
+        DELETE FROM sys_oper_log
+        WHERE request_method = 'POST' AND oper_time &lt; #{cutoff}
+          AND oper_url REGEXP '^(/api)?/dashboard/(dataset/[0-9]+/test|integration/endpoints/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+/test)$'
+        ORDER BY oper_time, oper_id LIMIT #{limit}
+    </delete>
+</mapper>

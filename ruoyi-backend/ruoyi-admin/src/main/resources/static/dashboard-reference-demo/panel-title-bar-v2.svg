@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="42" viewBox="0 0 420 42" preserveAspectRatio="none" fill="none">
+  <defs>
+    <linearGradient id="panelFill" x1="0" y1="0" x2="420" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A5EA7" stop-opacity="0.82"/>
+      <stop offset="0.42" stop-color="#123E68" stop-opacity="0.58"/>
+      <stop offset="1" stop-color="#071B31" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="panelLine" x1="0" y1="0" x2="420" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#27D9FF"/>
+      <stop offset="0.55" stop-color="#2188E8" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#27D9FF" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow" x="-10%" y="-80%" width="120%" height="260%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <path d="M0 2H420V40H0L10 21 0 2Z" fill="url(#panelFill)"/>
+  <path d="M2 3H392" stroke="url(#panelLine)" stroke-width="1"/>
+  <path d="M2 39H420" stroke="url(#panelLine)" stroke-width="1"/>
+  <path d="M13 14L20 21L13 28L17 21L13 14Z" fill="#40E8FF" filter="url(#glow)"/>
+  <path d="M28 33H175" stroke="#2FB5F5" stroke-opacity="0.35" stroke-dasharray="2 5"/>
+  <path d="M356 31L368 19M366 31L378 19" stroke="#2FB5F5" stroke-opacity="0.55"/>
+</svg>

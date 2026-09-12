@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="392" height="76" viewBox="0 0 392 76" fill="none">
+  <defs><radialGradient id="r"><stop stop-color="#36DFFF" stop-opacity=".36"/><stop offset=".72" stop-color="#12679A" stop-opacity=".24"/><stop offset="1" stop-color="#0A2440" stop-opacity="0"/></radialGradient><filter id="g" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  <g transform="translate(0 8)"><circle cx="30" cy="30" r="29" fill="url(#r)" stroke="#26D8FF" stroke-opacity=".5"/><circle cx="30" cy="22" r="8" fill="#B9F8FF"/><path d="M14 48C15 36 22 31 30 31S45 36 46 48" fill="#79EFFF" filter="url(#g)"/></g>
+  <g transform="translate(131 8)"><circle cx="30" cy="30" r="29" fill="url(#r)" stroke="#26D8FF" stroke-opacity=".5"/><path d="M20 20H40L37 28H23L20 20Z" fill="#C6FBFF"/><circle cx="30" cy="30" r="8" fill="#A9F3FF"/><path d="M15 49C17 39 22 35 30 35S43 39 45 49" fill="#5EDCFF" filter="url(#g)"/></g>
+  <g transform="translate(262 8)"><circle cx="30" cy="30" r="29" fill="url(#r)" stroke="#26D8FF" stroke-opacity=".5"/><circle cx="30" cy="22" r="8" fill="#B9F8FF"/><path d="M17 49C18 38 23 32 30 32S42 38 43 49" fill="#54D7FF"/><path d="M30 32L25 49H35L30 32Z" fill="#D8FDFF" filter="url(#g)"/></g>
+</svg>

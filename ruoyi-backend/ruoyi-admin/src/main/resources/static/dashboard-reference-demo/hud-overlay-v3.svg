@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" fill="none">
+  <defs>
+    <linearGradient id="edge" x1="0" y1="540" x2="1920" y2="540" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1689D8" stop-opacity=".12"/><stop offset=".16" stop-color="#34CFFF" stop-opacity=".72"/><stop offset=".5" stop-color="#4BE7FF" stop-opacity=".26"/><stop offset=".84" stop-color="#34CFFF" stop-opacity=".72"/><stop offset="1" stop-color="#1689D8" stop-opacity=".12"/>
+    </linearGradient>
+    <filter id="glow" x="-10%" y="-20%" width="120%" height="140%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <pattern id="ticks" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M1 0V7" stroke="#58D8FF" stroke-opacity=".42"/></pattern>
+    <radialGradient id="veil" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(980 370) rotate(90) scale(840 1480)"><stop stop-color="#061A2D" stop-opacity="0"/><stop offset=".52" stop-color="#051A30" stop-opacity="0"/><stop offset=".63" stop-color="#04172B" stop-opacity=".27"/><stop offset="1" stop-color="#031427" stop-opacity=".46"/></radialGradient>
+    <linearGradient id="bottomVeil" x1="960" y1="420" x2="960" y2="1080" gradientUnits="userSpaceOnUse"><stop stop-color="#05172A" stop-opacity="0"/><stop offset="1" stop-color="#031426" stop-opacity=".25"/></linearGradient>
+    <linearGradient id="topVeil" x1="960" y1="0" x2="960" y2="150" gradientUnits="userSpaceOnUse"><stop stop-color="#032346" stop-opacity=".70"/><stop offset=".65" stop-color="#032346" stop-opacity=".58"/><stop offset="1" stop-color="#032346" stop-opacity="0"/></linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#veil)"/><rect y="420" width="1920" height="660" fill="url(#bottomVeil)"/><rect width="1920" height="150" fill="url(#topVeil)"/>
+  <path d="M12 0V209L6 221V390L12 402V1034H170L182 1043H615L628 1055H1282L1295 1043H1738L1750 1034H1908V402L1914 390V221L1908 209V0" stroke="url(#edge)" stroke-width="2" filter="url(#glow)"/>
+  <path d="M0 1068H174L185 1059H617L630 1071H1290L1303 1059H1735L1746 1068H1920" stroke="url(#edge)"/>
+  <path d="M0 12H460M1460 12H1920" stroke="url(#edge)" stroke-dasharray="2 7"/>
+  <rect x="192" width="268" height="9" fill="url(#ticks)" opacity=".75"/><rect x="1460" width="268" height="9" fill="url(#ticks)" opacity=".75"/>
+  <path d="M18 1033H154L168 1024H475M1445 1024H1752L1766 1033H1902" stroke="#249CE7" stroke-opacity=".38"/>
+</svg>

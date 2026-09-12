@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="54" viewBox="0 0 160 54" fill="none">
+  <defs>
+    <linearGradient id="tabFill" x1="20" y1="3" x2="140" y2="51" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1B6FAF" stop-opacity="0.72"/>
+      <stop offset="1" stop-color="#143456" stop-opacity="0.82"/>
+    </linearGradient>
+    <linearGradient id="tabStroke" x1="0" y1="27" x2="160" y2="27" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4BEAFF" stop-opacity="0.55"/>
+      <stop offset="0.5" stop-color="#56C7FF"/>
+      <stop offset="1" stop-color="#4BEAFF" stop-opacity="0.55"/>
+    </linearGradient>
+    <filter id="tabGlow" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <path d="M18 5H142L156 27L142 49H18L4 27L18 5Z" fill="url(#tabFill)" stroke="url(#tabStroke)"/>
+  <path d="M22 9H138L149 27L138 45H22L11 27L22 9Z" stroke="#4FCFFF" stroke-opacity="0.28"/>
+  <path d="M38 47H122" stroke="#59E8FF" stroke-width="2" stroke-opacity="0.75" filter="url(#tabGlow)"/>
+</svg>

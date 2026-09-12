@@ -1,0 +1,12 @@
+[
+  {
+    "fromName": "仓库",
+    "toName": "施工一区",
+    "fromLongitude": 108.9,
+    "fromLatitude": 34.2,
+    "toLongitude": 109.02,
+    "toLatitude": 34.25,
+    "value": 20,
+    "group": "2026-09-06"
+  }
+]

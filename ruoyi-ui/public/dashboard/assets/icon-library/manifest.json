@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "source": "项目原创几何绘制，使用 Pillow 生成",
+  "icons": [
+    {
+      "key": "fan",
+      "label": "风机运行",
+      "category": "设备运行",
+      "gif": "fan.gif",
+      "png": "fan.png",
+      "frames": 24,
+      "width": 128,
+      "height": 128,
+      "frameDurationMs": 80
+    },
+    {
+      "key": "gear",
+      "label": "齿轮运行",
+      "category": "设备运行",
+      "gif": "gear.gif",
+      "png": "gear.png",
+      "frames": 24,
+      "width": 128,
+      "height": 128,
+      "frameDurationMs": 80
+    },
+    {
+      "key": "alarm",
+      "label": "告警闪烁",
+      "category": "状态告警",
+      "gif": "alarm.gif",
+      "png": "alarm.png",
+      "frames": 24,
+      "width": 128,
+      "height": 128,
+      "frameDurationMs": 80
+    },
+    {
+      "key": "radar",
+      "label": "雷达扫描",
+      "category": "监测定位",
+      "gif": "radar.gif",
+      "png": "radar.png",
+      "frames": 24,
+      "width": 128,
+      "height": 128,
+      "frameDurationMs": 80
+    },
+    {
+      "key": "data-flow",
+      "label": "数据传输",
+      "category": "数据通信",
+      "gif": "data-flow.gif",
+      "png": "data-flow.png",
+      "frames": 24,
+      "width": 128,
+      "height": 128,
+      "frameDurationMs": 80
+    },
+    {
+      "key": "location-pulse",
+      "label": "定位脉冲",
+      "category": "监测定位",
+      "gif": "location-pulse.gif",
+      "png": "location-pulse.png",
+      "frames": 24,
+      "width": 128,
+      "height": 128,
+      "frameDurationMs": 80
+    }
+  ]
+}

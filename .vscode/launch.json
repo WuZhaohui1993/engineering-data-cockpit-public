@@ -1,0 +1,17 @@
+{
+    // VS Code Java 扩展的后端调试配置。
+    // 数据库密码只从被 .gitignore 忽略的本地环境文件读取，
+    // 不在此文件中明文保存。
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "工程数据驾驶舱后端（本地）",
+            "request": "launch",
+            "mainClass": "com.ruoyi.RuoYiApplication",
+            "cwd": "${workspaceFolder}/ruoyi-backend",
+            "envFile": "${workspaceFolder}/config/ruoyi-local.env",
+            "vmArgs": "-Dspring.profiles.active=druid -Dserver.port=8080 -Dspring.data.redis.host=127.0.0.1 -Dspring.data.redis.port=6379 -Dspring.data.redis.database=0 -Druoyi.profile=${workspaceFolder}/.local/ruoyi/uploadPath -DLOG_PATH=${workspaceFolder}/.local/ruoyi/logs"
+        }
+    ]
+}

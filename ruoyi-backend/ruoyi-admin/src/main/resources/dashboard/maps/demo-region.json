@@ -1,0 +1,37 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "示例一区", "adcode": "demo-01" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[100, 30], [102, 30], [102, 32], [100, 32], [100, 30]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "示例二区", "adcode": "demo-02" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[102, 30], [104, 30], [104, 32], [102, 32], [102, 30]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "示例三区", "adcode": "demo-03" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[100, 32], [102, 32], [102, 34], [100, 34], [100, 32]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "示例四区", "adcode": "demo-04" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[102, 32], [104, 32], [104, 34], [102, 34], [102, 32]]]
+      }
+    }
+  ]
+}

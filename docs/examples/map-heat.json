@@ -1,0 +1,14 @@
+[
+  {
+    "label": "一区",
+    "value": 120,
+    "longitude": 108.9,
+    "latitude": 34.2
+  },
+  {
+    "label": "二区",
+    "value": 80,
+    "longitude": 109.02,
+    "latitude": 34.25
+  }
+]

@@ -1,4 +1,4 @@
-# 工程数据驾驶舱
+<img width="966" height="1482" alt="51b90697a290d49bbc426ce7286011e7" src="https://github.com/user-attachments/assets/4b20d5d9-d5b3-479a-a7aa-cfbd5bf4a268" /># 工程数据驾驶舱
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](ruoyi-backend/LICENSE) [![Vue 3](https://img.shields.io/badge/Vue-3.x-42b883.svg)](https://vuejs.org/) [![Java 17](https://img.shields.io/badge/Java-17%2B-ed8b00.svg)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
 
@@ -100,7 +100,9 @@ git diff --check
 
 扫描下方二维码加入“工程数据驾驶舱交流群”。二维码有效期以图片标注为准，失效后请联系维护者获取最新二维码。
 
-![工程数据驾驶舱交流群二维码](docs/assets/wechat-group-qr.png)
+![工程数据驾驶舱交流群二维码]![Uploading 51b90697a290d49bbc426ce7286011e7.jpg…]()
+
+
 
 ## 在线演示
 
